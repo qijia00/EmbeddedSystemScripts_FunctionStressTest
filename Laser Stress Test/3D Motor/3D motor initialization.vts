@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+
+<!-- *************************************************************************************
+	Initialize 3D motor 100 times
+************************************************************************************** -->
+
+<script>
+	<using name="pdm" progID="VsiVevo.TestScriptPdm"/>
+	<using name="dcm" progID="VsiVevo.TestScriptDcm"/>
+	<using name="cmd" progID="VsiVevo.TestScriptCommand"/>
+	<using name="ui" progID="VsiVevo.ScriptUI"/>
+
+	<link file="VsiFuncFile.vts"/>
+	<log action="clear"/> <!-- clear log -->
+
+<loop count="100">	
+	<!-- set 3D motor as attached but not initialized -->
+	<sleep time="1000"/>
+	<pdm action="write" name="App/Settings/Hardware/3D-Motor-State" type="long" base="10">1</pdm>
+	<!-- read current application name -->
+	<pdm action="read" name="App/Settings/Hardware/3D-Motor-State" type="long" return="$check"/>
+	<!-- log: PASS! 3D motor is initialized. -->
+	<if test="equal($check, 1)">
+		<action code="=($logmsg, 'PASS! 3D motor is attached but not initialized.')"/>
+		<log>script:$logmsg</log>
+	</if>
+	<!-- error log: FAIL! 3D motor is NOT initialized! -->
+	<if test="notequal($check, 1)">
+		<action code="=($logmsg, 'FAIL! 3D motor is NOT attached!')"/>
+		<log level="error">script:$logmsg</log>
+	</if>
+	
+	<!-- click [3D] button -->
+	<sleep time="1000"/>
+	<cmd code="3dMode"/>
+
+	<sleep time="1000"/>
+	<ui>
+		<input key="#SE"/>  <!-- use Enter key to OK the 3D initialization window -->
+	</ui>
+	
+	<!-- wait for 3D motor is initialized -->
+	<loop count="60">
+		<sleep time="1000"/>
+		<pdm action="read" name="App/Settings/Hardware/3D-Motor-State" type="long" return="$check"/>
+		<if test="equal($check, 3)">	<!-- if the 3D motor is attached and intialized -->
+			<action code="=($logmsg, '3D motor is attached and intialized.')"/>
+			<log>script:$logmsg</log>
+			<break/>
+		</if>
+	</loop>
+	
+	<ui>
+		<input key="#SE"/>  <!-- use Enter key to OK the 3D initialization window -->
+	</ui>
+</loop>
+
+</script>

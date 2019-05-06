@@ -1,0 +1,95 @@
+<?xml version="1.0"?>
+
+<!--
+    Preset groups test script
+-->
+
+<script>
+  <using name="pdm" progID="VsiVevo.TestScriptPdm"/>
+  <using name="dcm" progID="VsiVevo.TestScriptDcm"/>
+  <using name="cmd" progID="VsiVevo.TestScriptCommand"/>
+  <using name="ui" progID="VsiVevo.ScriptUI"/>
+
+  <link file="VsiFuncScan.vts"/>
+  
+  <function name="TestPresetGroups" inline="false">
+    <param name="$modes[]"/>
+    <param name="$presets[]"/>
+    <param name="$presetParams[]"/>
+    <param name="$numPasses"/>
+    <param name="$transducer"/>
+    <param name="$application"/>
+
+    <action code="InitializeTransducer($transducer,$application)"/>
+    
+    <action code="=($counter, 0)"/>
+
+    <log>Testing preset groups:</log>
+
+    <action code="=($counter, 0)"/>
+    <loop count="script:$numPasses">
+      <action code="StartScan($modes[$counter])"/>
+      <!--check if correct-->
+      <pdm action="read" name="script:$presetParams[$counter]" type="string" return="$preset"/>
+      <if test="notequal($preset, $presets[$counter])">
+        <action code="assign($msg, 'Unable to set correct preset, expected:')"/>
+        <action code="+=($msg, $presets[$counter])"/>
+        <action code="+=($msg, ', actual: ')"/>
+        <action code="+=($msg, $preset)"/>
+        <log level="error">script:$msg</log>
+      </if>
+      <action code="+=($counter, 1)"/>
+      <sleep time="1000"/>
+    </loop>
+
+    <log>Completed TestPresetGroups test</log>
+  </function>
+
+
+  <!-- Test BMode - General Imaging -->
+  <!-- Test BMode MS-250 -->
+  
+  <!-- copy test file to destination -->
+  
+  <!-- set linear contrast as default -->
+  <pdm action="write" name="Acq/Mode/Settings/Use-Advanced-Contrast">0</pdm>
+  <sleep time="1000"/>
+
+  <action code="=($numPasses, 9)"/>
+
+  <action code="setlength($modes[], $numPasses)"/>
+  <action code="=($modes[0], 'BMode')"/>
+  <action code="=($modes[1], 'ColorMode')"/>
+  <action code="=($modes[2], 'ContrastMode')"/>
+  <action code="=($modes[3], 'MMode')"/>
+  <action code="=($modes[4], 'MMode')"/>
+  <action code="=($modes[5], 'PowerMode')"/>
+  <action code="=($modes[6], 'PwMode')"/>
+  <action code="=($modes[7], 'PwMode')"/>
+  <action code="=($modes[8], 'TissueMode')"/>
+  
+  <action code="setlength($presets[], $numPasses)"/>
+  <action code="assign($presets[0], 'General Imaging')"/>
+  <action code="assign($presets[1], 'Kidney')"/>
+  <action code="assign($presets[2], 'Contrast')"/>
+  <action code="assign($presets[3], 'General Imaging')"/>
+  <action code="assign($presets[4], 'Vascular')"/>
+  <action code="assign($presets[5], 'Med Flow')"/>
+  <action code="assign($presets[6], 'General Imaging')"/>
+  <action code="assign($presets[7], 'Med Flow')"/>
+  <action code="assign($presets[8], 'Tissue')"/>
+
+  <action code="setlength($presetParams[], $numPasses)"/>
+  <action code="=($presetParams[0], 'Acq/B-Mode/Scan/Preset')"/>
+  <action code="=($presetParams[1], 'Acq/Color-Mode/Scan/Preset')"/>
+  <action code="=($presetParams[2], 'Acq/Contrast-Mode/Scan/Preset')"/>
+  <action code="=($presetParams[3], 'Acq/B-Mode/Scan/Preset')"/>
+  <action code="=($presetParams[4], 'Acq/M-Mode/Scan/Preset')"/>
+  <action code="=($presetParams[5], 'Acq/Power-Mode/Scan/Preset')"/>
+  <action code="=($presetParams[6], 'Acq/B-Mode/Scan/Preset')"/>
+  <action code="=($presetParams[7], 'Acq/Pw-Mode/Scan/Preset')"/>
+  <action code="=($presetParams[8], 'Acq/Pw-Tissue-Mode/Scan/Preset')"/>
+
+  <action code="TestPresetGroups($modes[],$presets[],$presetParams[],$numPasses,'MS-250','General Imaging')"/>
+
+</script>

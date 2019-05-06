@@ -1,0 +1,290 @@
+<?xml version="1.0"?>
+
+<!--
+    Preset test script
+-->
+
+<script>
+  <using name="pdm" progID="VsiVevo.TestScriptPdm"/>
+  <using name="dcm" progID="VsiVevo.TestScriptDcm"/>
+  <using name="cmd" progID="VsiVevo.TestScriptCommand"/>
+  <using name="ui" progID="VsiVevo.ScriptUI"/>
+
+  <link file="VsiFuncScan.vts"/>
+  
+  <function name="TestPresets" inline="false">
+    <param name="$presets[]"/>
+    <param name="$numPresets"/>
+    <param name="$presetParam"/>
+    <param name="$transducer"/>
+    <param name="$application"/>
+    <param name="$mode"/>
+
+    <action code="InitializeTransducer($transducer,$application)"/>
+    <action code="StartScan($mode)"/>
+
+    <action code="-=($numPresets, 1)"/>
+    <action code="=($loops, $numPresets)"/>
+    <action code="=($counter, 0)"/>
+
+    <log>Testing presets:</log>
+    <loop count="script:$loops">
+      <log>script:$presets[$counter]</log>
+      <action code="+=($counter, 1)"/>
+    </loop>
+
+    <action code="=($counter, 0)"/>
+    <action code="+=($loops, 2)"/><!-- make two more passes then the number of presets-->
+    <loop count="script:$loops">
+      <!--check if correct-->
+      <pdm action="read" name="script:$presetParam" type="string" return="$preset"/>
+      <if test="notequal($preset, $presets[$counter])">
+        <action code="assign($msg, 'Unable to set correct preset, expected:')"/>
+        <action code="+=($msg, $presets[$counter])"/>
+        <action code="+=($msg, ', actual: ')"/>
+        <action code="+=($msg, $preset)"/>
+        <log level="error">script:$msg</log>
+      </if>
+      <action code="+=($counter, 1)"/>
+      <if test="greater($counter, $numPresets)">
+        <action code="=($counter, 0)"/>
+      </if>
+      <cmd code="PresetsUp"/>
+      <sleep time="5000"/>
+    </loop>
+
+    <loop count="script:$loops">
+      <!--check if correct-->
+      <pdm action="read" name="script:$presetParam" type="string" return="$preset"/>
+      <if test="notequal($preset, $presets[$counter])">
+        <action code="assign($msg, 'Unable to set correct preset, expected:')"/>
+        <action code="+=($msg, $presets[$counter])"/>
+        <action code="+=($msg, ', actual: ')"/>
+        <action code="+=($msg, $preset)"/>
+        <log level="error">script:$msg</log>
+      </if>
+      <action code="-=($counter, 1)"/>
+      <if test="less($counter, 0)">
+        <action code="=($counter, $numPresets)"/>
+      </if>
+      <cmd code="PresetsDown"/>
+      <sleep time="5000"/>
+    </loop>
+    <log>Completed TestPresets</log>
+  </function>
+
+
+  <!-- Test BMode - General Imaging -->
+  <!-- Test BMode MS-200 -->
+  <action code="=($presetParam, 'Acq/B-Mode/Scan/Preset')"/>
+  <action code="=($numPresets, 1)"/>
+  <action code="setlength($presets[], $numPresets)"/>
+  <action code="assign($presets[0], 'General Imaging')"/>
+  
+  <action code="TestPresets($presets[],$numPresets,$presetParam,'MS-200','General Imaging','BMode')"/>
+
+  <!-- Test BMode MS-250 -->
+  <action code="=($presetParam, 'Acq/B-Mode/Scan/Preset')"/>
+  <action code="=($numPresets, 5)"/>
+  <action code="setlength($presets[], $numPresets)"/>
+  <action code="assign($presets[0], 'General Imaging')"/>
+  <action code="assign($presets[1], 'Ab Ao')"/>
+  <action code="assign($presets[2], 'Kidney')"/>
+  <action code="assign($presets[3], 'Liver')"/>
+  <action code="assign($presets[4], 'Portal')"/>
+
+  <action code="TestPresets($presets[],$numPresets,$presetParam,'MS-250','General Imaging','BMode')"/>
+
+  <!-- Test BMode LZ-250 -->
+  <action code="=($presetParam, 'Acq/B-Mode/Scan/Preset')"/>
+  <action code="=($numPresets, 5)"/>
+  <action code="setlength($presets[], $numPresets)"/>
+  <action code="assign($presets[0], 'General Imaging')"/>
+  <action code="assign($presets[1], 'Ab Ao')"/>
+  <action code="assign($presets[2], 'Kidney')"/>
+  <action code="assign($presets[3], 'Liver')"/>
+  <action code="assign($presets[4], 'Portal')"/>
+
+  <action code="TestPresets($presets[],$numPresets,$presetParam,'LZ-250','General Imaging','BMode')"/>
+
+  <!-- Test BMode MS-400 -->
+  <action code="=($presetParam, 'Acq/B-Mode/Scan/Preset')"/>
+  <action code="=($numPresets, 7)"/>
+  <action code="setlength($presets[], $numPresets)"/>
+  <action code="assign($presets[0], 'General Imaging')"/>
+  <action code="assign($presets[1], 'Ab Ao')"/>
+  <action code="assign($presets[2], 'Carotid')"/>
+  <action code="assign($presets[3], 'Embryo')"/>
+  <action code="assign($presets[4], 'Kidney')"/>
+  <action code="assign($presets[5], 'Liver')"/>
+  <action code="assign($presets[6], 'Portal')"/>
+
+  <action code="TestPresets($presets[],$numPresets,$presetParam,'MS-400','General Imaging','BMode')"/>
+
+  <!-- Test BMode MS-550D -->
+  <action code="=($presetParam, 'Acq/B-Mode/Scan/Preset')"/>
+  <action code="=($numPresets, 10)"/>
+  <action code="setlength($presets[], $numPresets)"/>
+  <action code="assign($presets[0], 'General Imaging')"/>
+  <action code="assign($presets[1], 'Ab Ao')"/>
+  <action code="assign($presets[2], 'Carotid')"/>
+  <action code="assign($presets[3], 'Embryo')"/>
+  <action code="assign($presets[4], 'Hind Limb')"/>
+  <action code="assign($presets[5], 'Kidney')"/>
+  <action code="assign($presets[6], 'Liver')"/>
+  <action code="assign($presets[7], 'Portal')"/>
+  <action code="assign($presets[8], 'Subcue T')"/>
+  <action code="assign($presets[9], 'Superficial')"/>
+
+  <action code="TestPresets($presets[],$numPresets,$presetParam,'MS-550D','General Imaging','BMode')"/>
+
+  <!-- Test BMode MS-550S -->
+  <action code="=($presetParam, 'Acq/B-Mode/Scan/Preset')"/>
+  <action code="=($numPresets, 10)"/>
+  <action code="setlength($presets[], $numPresets)"/>
+  <action code="assign($presets[0], 'General Imaging')"/>
+  <action code="assign($presets[1], 'Ab Ao')"/>
+  <action code="assign($presets[2], 'Carotid')"/>
+  <action code="assign($presets[3], 'Embryo')"/>
+  <action code="assign($presets[4], 'Hind Limb')"/>
+  <action code="assign($presets[5], 'Kidney')"/>
+  <action code="assign($presets[6], 'Liver')"/>
+  <action code="assign($presets[7], 'Portal')"/>
+  <action code="assign($presets[8], 'Subcue T')"/>
+  <action code="assign($presets[9], 'Superficial')"/>
+
+  <action code="TestPresets($presets[],$numPresets,$presetParam,'MS-550S','General Imaging','BMode')"/>
+
+  <!-- Test BMode LZ-550 -->
+  <action code="=($presetParam, 'Acq/B-Mode/Scan/Preset')"/>
+  <action code="=($numPresets, 10)"/>
+  <action code="setlength($presets[], $numPresets)"/>
+  <action code="assign($presets[0], 'General Imaging')"/>
+  <action code="assign($presets[1], 'Ab Ao')"/>
+  <action code="assign($presets[2], 'Carotid')"/>
+  <action code="assign($presets[3], 'Embryo')"/>
+  <action code="assign($presets[4], 'Hind Limb')"/>
+  <action code="assign($presets[5], 'Kidney')"/>
+  <action code="assign($presets[6], 'Liver')"/>
+  <action code="assign($presets[7], 'Portal')"/>
+  <action code="assign($presets[8], 'Subcue T')"/>
+  <action code="assign($presets[9], 'Superficial')"/>
+
+  <action code="TestPresets($presets[],$numPresets,$presetParam,'LZ-550','General Imaging','BMode')"/>
+
+  <!-- Test BMode MS-700 -->
+  <action code="=($presetParam, 'Acq/B-Mode/Scan/Preset')"/>
+  <action code="=($numPresets, 7)"/>
+  <action code="setlength($presets[], $numPresets)"/>
+  <action code="assign($presets[0], 'General Imaging')"/>
+  <action code="assign($presets[1], 'Carotid')"/>
+  <action code="assign($presets[2], 'Hind Limb')"/>
+  <action code="assign($presets[3], 'Kidney')"/>
+  <action code="assign($presets[4], 'Liver')"/>
+  <action code="assign($presets[5], 'Subcue T')"/>
+  <action code="assign($presets[6], 'Superficial')"/>
+
+  <action code="TestPresets($presets[],$numPresets,$presetParam,'MS-700','General Imaging','BMode')"/>
+
+
+  <!-- Test BMode - Cardiology -->
+  <!-- Test BMode MS-200 -->
+  <action code="=($presetParam, 'Acq/B-Mode/Scan/Preset')"/>
+  <action code="=($numPresets, 4)"/>
+  <action code="setlength($presets[], $numPresets)"/>
+  <action code="assign($presets[0], 'PSLA')"/>
+  <action code="assign($presets[1], 'Apic 4')"/>
+  <action code="assign($presets[2], 'Asc Ao')"/>
+  <action code="assign($presets[3], 'SAX')"/>
+
+  <action code="TestPresets($presets[],$numPresets,$presetParam,'MS-200','Cardiology','BMode')"/>
+
+  <!-- Test BMode MS-250 -->
+  <action code="=($presetParam, 'Acq/B-Mode/Scan/Preset')"/>
+  <action code="=($numPresets, 6)"/>
+  <action code="setlength($presets[], $numPresets)"/>
+  <action code="assign($presets[0], 'PSLA')"/>
+  <action code="assign($presets[1], 'Ao Arch')"/>
+  <action code="assign($presets[2], 'Apic 4')"/>
+  <action code="assign($presets[3], 'Asc Ao')"/>
+  <action code="assign($presets[4], 'Carotid')"/>
+  <action code="assign($presets[5], 'SAX')"/>
+
+  <action code="TestPresets($presets[],$numPresets,$presetParam,'MS-250','Cardiology','BMode')"/>
+
+  <!-- Test BMode LZ-250 -->
+  <action code="=($presetParam, 'Acq/B-Mode/Scan/Preset')"/>
+  <action code="=($numPresets, 6)"/>
+  <action code="setlength($presets[], $numPresets)"/>
+  <action code="assign($presets[0], 'PSLA')"/>
+  <action code="assign($presets[1], 'Ao Arch')"/>
+  <action code="assign($presets[2], 'Apic 4')"/>
+  <action code="assign($presets[3], 'Asc Ao')"/>
+  <action code="assign($presets[4], 'Carotid')"/>
+  <action code="assign($presets[5], 'Sax')"/>
+
+  <action code="TestPresets($presets[],$numPresets,$presetParam,'LZ-250','Cardiology','BMode')"/>
+
+  <!-- Test BMode MS-400 -->
+  <action code="=($presetParam, 'Acq/B-Mode/Scan/Preset')"/>
+  <action code="=($numPresets, 6)"/>
+  <action code="setlength($presets[], $numPresets)"/>
+  <action code="assign($presets[0], 'PSLA')"/>
+  <action code="assign($presets[1], 'Ao Arch')"/>
+  <action code="assign($presets[2], 'Apic 4')"/>
+  <action code="assign($presets[3], 'Asc Ao')"/>
+  <action code="assign($presets[4], 'Carotid')"/>
+  <action code="assign($presets[5], 'SAX')"/>
+
+  <action code="TestPresets($presets[],$numPresets,$presetParam,'MS-400','Cardiology','BMode')"/>
+
+  <!-- Test BMode MS-550D -->
+  <action code="=($presetParam, 'Acq/B-Mode/Scan/Preset')"/>
+  <action code="=($numPresets, 6)"/>
+  <action code="setlength($presets[], $numPresets)"/>
+  <action code="assign($presets[0], 'PSLA')"/>
+  <action code="assign($presets[1], 'Ao Arch')"/>
+  <action code="assign($presets[2], 'Apic 4')"/>
+  <action code="assign($presets[3], 'Asc Ao')"/>
+  <action code="assign($presets[4], 'Carotid')"/>
+  <action code="assign($presets[5], 'SAX')"/>
+
+  <action code="TestPresets($presets[],$numPresets,$presetParam,'MS-550D','Cardiology','BMode')"/>
+
+  <!-- Test BMode MS-550S -->
+  <action code="=($presetParam, 'Acq/B-Mode/Scan/Preset')"/>
+  <action code="=($numPresets, 6)"/>
+  <action code="setlength($presets[], $numPresets)"/>
+  <action code="assign($presets[0], 'PSLA')"/>
+  <action code="assign($presets[1], 'Ao Arch')"/>
+  <action code="assign($presets[2], 'Apic 4')"/>
+  <action code="assign($presets[3], 'Asc Ao')"/>
+  <action code="assign($presets[4], 'Carotid')"/>
+  <action code="assign($presets[5], 'SAX')"/>
+
+  <action code="TestPresets($presets[],$numPresets,$presetParam,'MS-550S','Cardiology','BMode')"/>
+
+  <!-- Test BMode LZ-550 -->
+  <action code="=($presetParam, 'Acq/B-Mode/Scan/Preset')"/>
+  <action code="=($numPresets, 6)"/>
+  <action code="setlength($presets[], $numPresets)"/>
+  <action code="assign($presets[0], 'PSLA')"/>
+  <action code="assign($presets[1], 'Ao Arch')"/>
+  <action code="assign($presets[2], 'Apic 4')"/>
+  <action code="assign($presets[3], 'Asc Ao')"/>
+  <action code="assign($presets[4], 'Carotid')"/>
+  <action code="assign($presets[5], 'SAX')"/>
+
+  <action code="TestPresets($presets[],$numPresets,$presetParam,'LZ-550','Cardiology','BMode')"/>
+
+  <!-- Test BMode MS-700 -->
+  <action code="=($presetParam, 'Acq/B-Mode/Scan/Preset')"/>
+  <action code="=($numPresets, 2)"/>
+  <action code="setlength($presets[], $numPresets)"/>
+  <action code="assign($presets[0], 'PSLA')"/>
+  <action code="assign($presets[1], 'SAX')"/>
+
+  <action code="TestPresets($presets[],$numPresets,$presetParam,'MS-700','Cardiology','BMode')"/>
+
+
+</script>

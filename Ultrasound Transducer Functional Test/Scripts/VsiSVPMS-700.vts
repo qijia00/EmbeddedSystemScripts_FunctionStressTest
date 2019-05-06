@@ -1,0 +1,2287 @@
+<?xml version="1.0"?>
+
+<!-- *************************************************************************************
+	SVP for Sierra V Software - 28 - MS-700 rev 1.6
+	** make sure MS-700 is connected **
+	** make sure no custom made applications start with "g" or "G" or "c" or "C" **
+	** start from Study Browser with no pop up window **
+
+	Rev 1.0 - 2011-Sept.29 - Initial realease created by Jia Qi
+	Rev 1.1 - 2011-Nov.3 - updated for new SVP revision
+        Rev 1.2 - 2011-Dec.16 - updated for new SVP revision
+        Rev 1.3 - 2012-Feb.10 - Updated for new SVP revision
+************************************************************************************** -->
+
+<script logFile="C:\scriptMS-700.txt" logClear="true">
+	<using name="pdm" progID="VsiVevo.TestScriptPdm"/>
+	<using name="dcm" progID="VsiVevo.TestScriptDcm"/>
+	<using name="cmd" progID="VsiVevo.TestScriptCommand"/>
+	<using name="ui" progID="VsiVevo.ScriptUI"/>
+	
+	<link file="VsiSVPFunc.vts"/>
+
+	<!-- SVP for Sierra V Software - 28 - MS-700 rev 1.4 -->
+	<action code="=($logmsg, 'SVP for Sierra V Software - 28 - MS-700 rev 1.4')"/>
+	<log level="warning">script:$logmsg</log>
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- B-Mode -->
+	<action code="=($logmsg, 'B-Mode')"/>
+	<log level="warning">script:$logmsg</log>
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0001 -->
+	<action code="=($logmsg, 'TST-28-0001:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="PauseScan()"/>
+	<!-- action code="InitializeTransducerSim('MS-700', 'General Imaging')"/ -->	<!-- with simulator -->
+	<action code="InitializeTransducer('MS-700', 'General Imaging')"/>	<!-- on system -->
+	<sleep time="10000"/>
+	<action code="StartScan('BMode')"/>
+
+	<action code="PauseScan()"/>
+	<!-- action code="InitializeTransducerSim('MS-700', 'Cardiology')"/ -->	<!-- with simulator -->
+	<action code="InitializeTransducer('MS-700', 'Cardiology')"/>	<!-- on system -->
+	<sleep time="10000"/>
+	<action code="StartScan('BMode')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0002 -->
+	<action code="=($logmsg, 'TST-28-0002:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="DepthOffset('B-Mode', 1)"/>
+	<action code="FrameRateTableB('Max', 48000000, 32000000, 2.25, 5.0, 2.73, 'Standard', 1000.0)"/>
+	<action code="FrameRateTableB('Max', 40000000, 32000000, 9.75, 10.0, 9.73, 'High', 100.0)"/>
+	<action code="FrameRateTableB('Max', 48000000, 32000000, 5.25, 8.0, 9.73, 'Standard', 273.0)"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0003 -->
+	<action code="=($logmsg, 'TST-28-0003:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="DepthOffset('B-Mode', 3)"/>
+	<action code="ImageDepth('B-Mode', 5, 'in range')"/>
+	<action code="ImageWidth('B-Mode', 2.73)"/>
+	<action code="LineDensity2('B-Mode', 'Standard')"/>
+	<action code="ScanRestart2('FrameRateSetting6', 'B-Mode', 'Min')"/>
+	<action code="=($FrameRate[0], FrameRate('B-Mode'))"/>
+	<action code="FrameRateFast($FrameRate[0], 5, 'not max')"/>
+	<action code="Boundary('Acq/B-Mode/Scan/Frame-Rate', 'FrameRateDown')"/>
+	<action code="ScanRestart2('FrameRateSetting6', 'B-Mode', 'Low')"/>
+	<action code="=($FrameRate[1], FrameRate('B-Mode'))"/>
+	<action code="FrameRateFast($FrameRate[1], 10, 'not max')"/>
+	<action code="ScanRestart2('FrameRateSetting6', 'B-Mode', 'Medium-Low')"/>
+	<action code="=($FrameRate[2], FrameRate('B-Mode'))"/>
+	<action code="FrameRateFast($FrameRate[2], 25, 'not max')"/>
+	<action code="ScanRestart2('FrameRateSetting6', 'B-Mode', 'Medium')"/>
+	<action code="=($FrameRate[3], FrameRate('B-Mode'))"/>
+	<action code="FrameRateFast($FrameRate[3], 50, 'not max')"/>
+	<action code="ScanRestart2('FrameRateSetting6', 'B-Mode', 'High')"/>
+	<action code="=($FrameRate[4], FrameRate('B-Mode'))"/>
+	<action code="FrameRateFast($FrameRate[4], 100, 'not max')"/>
+	<action code="ScanRestart2('FrameRateSetting6', 'B-Mode', 'Max')"/>
+	<action code="=($FrameRate[5], FrameRate('B-Mode'))"/>
+	<action code="FrameRateFast($FrameRate[5], 100, 'max')"/>
+	<action code="Boundary('Acq/B-Mode/Scan/Frame-Rate', 'FrameRateUp')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0004  -->
+	<action code="=($logmsg, 'TST-28-0004:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="DepthOffset('B-Mode', 1)"/>
+	<action code="ImageDepth('B-Mode', 10, 'in range')"/>
+	<action code="ImageWidth('B-Mode', 9.73)"/>
+	<action code="LineDensity2('B-Mode', 'High')"/>
+	<action code="FocalZones('B-Mode', 'Triple', 1.5)"/>
+	<action code="ScanRestart2('FrameRateSetting6', 'B-Mode', 'Max')"/>
+	<action code="=($FrameRate[5], FrameRate('B-Mode'))"/>
+	<action code="FrameRateSlow($FrameRate[5], 100, $FrameRate[5], 'max')"/>
+	<action code="ScanRestart2('FrameRateSetting6', 'B-Mode', 'High')"/>
+	<action code="=($FrameRate[4], FrameRate('B-Mode'))"/>
+	<action code="FrameRateSlow($FrameRate[4], 100, $FrameRate[5], 'not max')"/>
+	<action code="ScanRestart2('FrameRateSetting6', 'B-Mode', 'Medium')"/>
+	<action code="=($FrameRate[3], FrameRate('B-Mode'))"/>
+	<action code="FrameRateSlow($FrameRate[3], 50, $FrameRate[5], 'not max')"/>
+	<action code="ScanRestart2('FrameRateSetting6', 'B-Mode', 'Medium-Low')"/>
+	<action code="=($FrameRate[2], FrameRate('B-Mode'))"/>
+	<action code="FrameRateSlow($FrameRate[2], 25, $FrameRate[5], 'not max')"/>
+	<action code="ScanRestart2('FrameRateSetting6', 'B-Mode', 'Low')"/>
+	<action code="=($FrameRate[1], FrameRate('B-Mode'))"/>
+	<action code="FrameRateSlow($FrameRate[1], 10, $FrameRate[5], 'not max')"/>
+	<action code="ScanRestart2('FrameRateSetting6', 'B-Mode', 'Min')"/>
+	<action code="=($FrameRate[0], FrameRate('B-Mode'))"/>
+	<action code="FrameRateSlow($FrameRate[0], 5, $FrameRate[5], 'not max')"/>
+	<action code="FrameRateSetting6('B-Mode', 'Max')"/>	<!-- set back to original value -->
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0005 -->
+	<action code="=($logmsg, 'TST-28-0005:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="ScanRestart2('LineDensity2', 'B-Mode', 'High')"/>
+	<action code="Boundary('Acq/B-Mode/Scan/Line-Density', 'LineDensityUp')"/>
+	<action code="ScanRestart2('LineDensity2', 'B-Mode', 'Standard')"/>
+	<action code="Boundary('Acq/B-Mode/Scan/Line-Density', 'LineDensityDown')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0006 -->
+	<action code="=($logmsg, 'TST-28-0006:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="DepthOffset('B-Mode', 1)"/>
+	<action code="ScanRestart3('ImageDepth', 'B-Mode', 3, 'out of range')"/>
+	<action code="ScanRestart3('ImageDepth', 'B-Mode', 4, 'in range')"/>
+	<action code="ScanRestart3('ImageDepth', 'B-Mode', 5, 'in range')"/>
+	<action code="ScanRestart3('ImageDepth', 'B-Mode', 6, 'in range')"/>
+	<action code="ScanRestart3('ImageDepth', 'B-Mode', 7, 'in range')"/>
+	<action code="ScanRestart3('ImageDepth', 'B-Mode', 8, 'in range')"/>
+	<action code="ScanRestart3('ImageDepth', 'B-Mode', 9, 'in range')"/>
+	<action code="ScanRestart3('ImageDepth', 'B-Mode', 10, 'in range')"/>
+	<action code="ScanRestart3('ImageDepth', 'B-Mode', 11, 'out of range')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0007  & TST-28-0008 -->
+	<action code="=($logmsg, 'TST-28-0007 and TST-28-0008:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="DepthOffset('B-Mode', 1)"/>
+	<action code="ImageDepth('B-Mode', 10, 'in range')"/>
+	<action code="ScanRestart3('FocalZones', 'B-Mode', 'Single', 0)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 1.5, -1, -1)"/>
+	<action code="Boundary('Acq/B-Mode/Scan/Focal-Zones-Pos1', 'FocusDepthUp')"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 2.25, -1, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 3.0, -1, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 3.75, -1, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 4.5, -1, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 5.25, -1, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 6.0, -1, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 6.75, -1, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 7.5, -1, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 8.25, -1, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 9.0, -1, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 9.75, -1, -1)"/>
+	<action code="Boundary('Acq/B-Mode/Scan/Focal-Zones-Pos1', 'FocusDepthDown')"/>
+	<cmd code="FocalZonesDown"/>
+	<action code="FocalZonesToggle('B-Mode', 'Triple', 1.5)"/>
+	<action code="ScanRestart3('FocalZones', 'B-Mode', 'Tight Dual', 0.75)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 1.5, 2.25, -1)"/>
+	<action code="Boundary('Acq/B-Mode/Scan/Focal-Zones-Pos1', 'FocusDepthUp')"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 2.25, 3.0, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 3.0, 3.75, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 3.75, 4.5, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 4.5, 5.25, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 5.25, 6.0, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 6.0, 6.75, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 6.75, 7.5, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 7.5, 8.25, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 8.25, 9.0, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 9.0, 9.75, -1)"/>
+	<action code="Boundary('Acq/B-Mode/Scan/Focal-Zones-Pos1', 'FocusDepthDown')"/>
+	<action code="ScanRestart3('FocalZones', 'B-Mode', 'Dual', 1.5)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 1.5, 3.0, -1)"/>
+	<action code="Boundary('Acq/B-Mode/Scan/Focal-Zones-Pos1', 'FocusDepthUp')"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 2.25, 3.75, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 3.0, 4.5, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 3.75, 5.25, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 4.5, 6.0, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 5.25, 6.75, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 6.0, 7.5, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 6.75, 8.25, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 7.5, 9.0, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 8.25, 9.75, -1)"/>
+	<action code="Boundary('Acq/B-Mode/Scan/Focal-Zones-Pos1', 'FocusDepthDown')"/>
+	<action code="ScanRestart3('FocalZones', 'B-Mode', 'Tight Triple', 0.75)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 1.5, 2.25, 3.0)"/>
+	<action code="Boundary('Acq/B-Mode/Scan/Focal-Zones-Pos1', 'FocusDepthUp')"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 2.25, 3.0, 3.75)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 3.0, 3.75, 4.5)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 3.75, 4.5, 5.25)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 4.5, 5.25, 6.0)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 5.25, 6.0, 6.75)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 6.0, 6.75, 7.5)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 6.75, 7.5, 8.25)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 7.5, 8.25, 9.0)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 8.25, 9.0, 9.75)"/>
+	<action code="Boundary('Acq/B-Mode/Scan/Focal-Zones-Pos1', 'FocusDepthDown')"/>
+	<action code="ScanRestart3('FocalZones', 'B-Mode', 'Triple', 1.5)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 1.5, 3.0, 4.5)"/>
+	<action code="Boundary('Acq/B-Mode/Scan/Focal-Zones-Pos1', 'FocusDepthUp')"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 2.25, 3.75, 5.25)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 3.0, 4.5, 6.0)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 3.75, 5.25, 6.75)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 4.5, 6.0, 7.5)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 5.25, 6.75, 8.25)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 6.0, 7.5, 9.0)"/>
+	<action code="ScanRestart4('FocusDepth', 'B-Mode', 6.75, 8.25, 9.75)"/>
+	<action code="Boundary('Acq/B-Mode/Scan/Focal-Zones-Pos1', 'FocusDepthDown')"/>
+	<cmd code="FocalZonesUp"/>
+	<action code="FocalZonesToggle('B-Mode', 'Single', 0)"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0009 -->
+	<action code="=($logmsg, 'TST-28-0009:')"/>
+	<log level="warning">script:$logmsg</log>
+
+        <sleep time="1000"/>
+	<action code="ScanRestart3('Frequency', 'B-Mode', 40000000, 32000000)"/>
+	<action code="Boundary('Acq/B-Mode/Tx/Frequency', 'TxFrequencyDown')"/>
+	<action code="ScanRestart3('Frequency', 'B-Mode', 48000000, 32000000)"/>
+	<action code="Boundary('Acq/B-Mode/Tx/Frequency', 'TxFrequencyUp')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0010 -->
+	<action code="=($logmsg, 'TST-28-0010:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="TxCycles('B-Mode', 1, 2, 'same')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0011 -->
+	<action code="=($logmsg, 'TST-28-0011:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="=($same, ScanRestart2('TxPower', 'B-Mode', 1))"/>
+	<action code="VoltageB('B-Mode', $same)"/>
+	<action code="Boundary('Acq/B-Mode/Tx/Power', 'TxPowerDown')"/>
+	<action code="=($same, ScanRestart2('TxPower', 'B-Mode', 2))"/>
+	<action code="VoltageB('B-Mode', $same)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'B-Mode', 3))"/>
+	<action code="VoltageB('B-Mode', $same)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'B-Mode', 4))"/>
+	<action code="VoltageB('B-Mode', $same)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'B-Mode', 5))"/>
+	<action code="VoltageB('B-Mode', $same)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'B-Mode', 6))"/>
+	<action code="VoltageB('B-Mode', $same)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'B-Mode', 7))"/>
+	<action code="VoltageB('B-Mode', $same)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'B-Mode', 8))"/>
+	<action code="VoltageB('B-Mode', $same)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'B-Mode', 9))"/>
+	<action code="VoltageB('B-Mode', $same)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'B-Mode', 10))"/>
+	<action code="VoltageB('B-Mode', $same)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'B-Mode', 20))"/>
+	<action code="VoltageB('B-Mode', $same)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'B-Mode', 30))"/>
+	<action code="VoltageB('B-Mode', $same)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'B-Mode', 40))"/>
+	<action code="VoltageB('B-Mode', $same)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'B-Mode', 50))"/>
+	<action code="VoltageB('B-Mode', $same)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'B-Mode', 60))"/>
+	<action code="VoltageB('B-Mode', $same)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'B-Mode', 70))"/>
+	<action code="VoltageB('B-Mode', $same)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'B-Mode', 80))"/>
+	<action code="VoltageB('B-Mode', $same)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'B-Mode', 90))"/>
+	<action code="VoltageB('B-Mode', $same)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'B-Mode', 100))"/>
+	<action code="VoltageB('B-Mode', $same)"/>
+	<action code="Boundary('Acq/B-Mode/Tx/Power', 'TxPowerUp')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0012 -->
+	<action code="=($logmsg, 'TST-28-0012:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="PauseScan()"/>
+	<!-- action code="InitializeTransducerSim('MS-700', 'General Imaging')"/ -->	<!-- with simulator -->
+	<action code="InitializeTransducer('MS-700', 'General Imaging')"/>	<!-- on system -->
+	<sleep time="10000"/>
+	<action code="StartScan('BMode')"/>
+	<sleep time="1000"/>
+	<cmd code="TxFrequencyDown"/>
+	<sleep time="1000"/>
+	<action code="TxValues('B-Mode', 'TXAE', 0)"/>
+	<action code="TxValues('B-Mode', 'TXAH', 60)"/>
+	<action code="TxValues('B-Mode', 'TXAM', 31)"/>
+	<action code="TxValues('B-Mode', 'TXB', 15)"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0013 -->
+	<action code="=($logmsg, 'TST-28-0013:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="PauseScan()"/>
+	<!-- action code="InitializeTransducerSim('MS-700', 'Cardiology')"/ -->	<!-- with simulator -->
+	<action code="InitializeTransducer('MS-700', 'Cardiology')"/>	<!-- on system -->
+	<sleep time="10000"/>
+	<action code="StartScan('BMode')"/>
+	<sleep time="1000"/>
+	<cmd code="TxFrequencyDown"/>
+	<sleep time="1000"/>
+	<action code="TxValues('B-Mode', 'TXAE', 0)"/>
+	<action code="TxValues('B-Mode', 'TXAH', 60)"/>
+	<action code="TxValues('B-Mode', 'TXAM', 31)"/>
+	<action code="TxValues('B-Mode', 'TXB', 15)"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0014 -->
+	<action code="=($logmsg, 'TST-28-0014:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="Gain2D('B-Mode', 0, 70, 1, 'yes', 'yes')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0015 -->
+	<action code="=($logmsg, 'TST-28-0015:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="ScanRestart2('ImageWidth', 'B-Mode', 2.73)"/>
+	<action code="Boundary('Acq/B-Mode/Display/Width', 'WidthDown')"/>
+	<action code="ScanRestart2('ImageWidth', 'B-Mode', 3.73)"/>
+	<action code="ScanRestart2('ImageWidth', 'B-Mode', 4.73)"/>
+	<action code="ScanRestart2('ImageWidth', 'B-Mode', 5.73)"/>
+	<action code="ScanRestart2('ImageWidth', 'B-Mode', 6.73)"/>
+	<action code="ScanRestart2('ImageWidth', 'B-Mode', 7.73)"/>
+	<action code="ScanRestart2('ImageWidth', 'B-Mode', 8.73)"/>
+	<action code="ScanRestart2('ImageWidth', 'B-Mode', 9.73)"/>
+	<action code="Boundary('Acq/B-Mode/Display/Width', 'WidthUp')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0016 -->
+	<action code="=($logmsg, 'TST-28-0016:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="DepthOffset('B-Mode', 1)"/>
+	<action code="ImageDepth('B-Mode', 10, 'in range')"/>
+	<action code="ScanRestart2('DepthOffset', 'B-Mode', 1)"/>
+	<action code="Boundary('Acq/B-Mode/Display/Delay', 'DepthOffsetUp')"/>
+	<action code="ScanRestart2('DepthOffset', 'B-Mode', 2)"/>
+	<action code="ScanRestart2('DepthOffset', 'B-Mode', 3)"/>
+	<action code="ScanRestart2('DepthOffset', 'B-Mode', 4)"/>
+	<action code="ScanRestart2('DepthOffset', 'B-Mode', 5)"/>
+	<action code="ScanRestart2('DepthOffset', 'B-Mode', 6)"/>
+	<action code="ScanRestart2('DepthOffset', 'B-Mode', 7)"/>
+	<action code="ScanRestart2('DepthOffset', 'B-Mode', 8)"/>
+	<action code="Boundary('Acq/B-Mode/Display/Delay', 'DepthOffsetDown')"/>
+	<action code="ScanRestart2('DepthOffset', 'B-Mode', 1)"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0017 -->
+	<action code="=($logmsg, 'TST-28-0017:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="ScanRestart2('Persist4', 'B-Mode', 'Off')"/>
+	<action code="Boundary('Acq/B-Mode/Display/Persist-Name', 'PersistDown')"/>
+	<action code="ScanRestart2('Persist4', 'B-Mode', 'Low')"/>
+	<action code="ScanRestart2('Persist4', 'B-Mode', 'Med')"/>
+	<action code="ScanRestart2('Persist4', 'B-Mode', 'High')"/>
+	<action code="Boundary('Acq/B-Mode/Display/Persist-Name', 'PersistUp')"/>
+	<action code="ScanRestart2('Persist4', 'B-Mode', 'Off')"/>		<!-- set back to original value -->
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- Color Doppler Mode -->
+	<action code="=($logmsg, 'Color Doppler Mode')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="StartScan('ColorMode')"/>
+	
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0018 -->
+	<action code="=($logmsg, 'TST-28-0018:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="BoxSize('min')"/>
+	<action code="BoxSizeCheck('Color-Mode', 1.8, 1.8)"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0019 -->
+	<action code="=($logmsg, 'TST-28-0019:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="PauseScan()"/>
+	<!-- action code="InitializeTransducerSim('MS-700', 'General Imaging')"/ -->	<!-- with simulator -->
+	<action code="InitializeTransducer('MS-700', 'General Imaging')"/>	<!-- on system -->
+	<sleep time="10000"/>
+	<action code="StartScan('ColorMode')"/>
+	<action code="ScanRestart2('Sensitivity', 'Color-Mode', 1)"/>
+	<action code="Boundary('Acq/Color-Mode/ColorSoft/Sensitivity', 'SensitivityDown')"/>
+	<action code="ScanRestart2('Sensitivity', 'Color-Mode', 2)"/>
+	<action code="ScanRestart2('Sensitivity', 'Color-Mode', 3)"/>
+	<action code="ScanRestart2('Sensitivity', 'Color-Mode', 4)"/>
+	<action code="ScanRestart2('Sensitivity', 'Color-Mode', 5)"/>
+	<action code="Boundary('Acq/Color-Mode/ColorSoft/Sensitivity', 'SensitivityUp')"/>
+
+	<action code="PauseScan()"/>
+	<!-- action code="InitializeTransducerSim('MS-700', 'Cardiology')"/ -->	<!-- with simulator -->
+	<action code="InitializeTransducer('MS-700', 'Cardiology')"/>	<!-- on system -->
+	<sleep time="10000"/>
+	<action code="StartScan('ColorMode')"/>
+	<action code="ScanRestart2('Sensitivity', 'Color-Mode', 1)"/>
+	<action code="Boundary('Acq/Color-Mode/ColorSoft/Sensitivity', 'SensitivityDown')"/>
+	<action code="ScanRestart2('Sensitivity', 'Color-Mode', 2)"/>
+	<action code="ScanRestart2('Sensitivity', 'Color-Mode', 3)"/>
+	<action code="ScanRestart2('Sensitivity', 'Color-Mode', 4)"/>
+	<action code="ScanRestart2('Sensitivity', 'Color-Mode', 5)"/>
+	<action code="ScanRestart2('Sensitivity', 'Color-Mode', 6)"/>
+	<action code="Boundary('Acq/Color-Mode/ColorSoft/Sensitivity', 'SensitivityUp')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0020 -->
+	<action code="=($logmsg, 'TST-28-0020:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="PauseScan()"/>
+	<!-- action code="InitializeTransducerSim('MS-700', 'Cardiology')"/ -->	<!-- with simulator -->
+	<action code="InitializeTransducer('MS-700', 'Cardiology')"/>	<!-- on system -->
+	<sleep time="10000"/>
+	<action code="StartScan('ColorMode')"/>
+	<action code="DepthOffset('Color-Mode', 1)"/>
+	<action code="FrameRateTableDoppler('Color-Mode', 10000, 40000000, 40000000, 3, 10, 8.25, 2.73, 1.86, 'Full', 75.0)"/>
+	<action code="FrameRateTableDoppler('Color-Mode', 20000, 40000000, 40000000, 5, 10, 9.0, 9.73, 5.6, 'Full', 10.0)"/>
+	<action code="FrameRateTableDoppler('Color-Mode', 35000, 40000000, 40000000, 6, 10, 9.75, 6.73, 6.5, 'Full', 12.0)"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0021 -->
+	<action code="=($logmsg, 'TST-28-0021:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="ScanRestart2('LineDensity5', 'Color-Mode', 'High')"/>
+	<action code="Boundary('Acq/Color-Mode/Scan/Line-Density', 'LineDensityUp')"/>
+	<action code="ScanRestart2('LineDensity5', 'Color-Mode', 'Full')"/>
+	<action code="ScanRestart2('LineDensity5', 'Color-Mode', 'Half')"/>
+	<action code="ScanRestart2('LineDensity5', 'Color-Mode', 'Third')"/>
+	<action code="ScanRestart2('LineDensity5', 'Color-Mode', 'Quarter')"/>
+	<action code="Boundary('Acq/Color-Mode/Scan/Line-Density', 'LineDensityDown')"/>
+	<action code="ScanRestart2('LineDensity5', 'Color-Mode', 'Full')"/>		<!-- set back to original value -->
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0022 -->
+	<action code="=($logmsg, 'TST-28-0022:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="ScanRestart2('ImageWidth', 'Color-Mode', 2.73)"/>
+	<action code="Boundary('Acq/B-Mode/Display/Width', 'WidthDown')"/>
+	<action code="ScanRestart2('ImageWidth', 'Color-Mode', 3.73)"/>
+	<action code="ScanRestart2('ImageWidth', 'Color-Mode', 4.73)"/>
+	<action code="ScanRestart2('ImageWidth', 'Color-Mode', 5.73)"/>
+	<action code="ScanRestart2('ImageWidth', 'Color-Mode', 6.73)"/>
+	<action code="ScanRestart2('ImageWidth', 'Color-Mode', 7.73)"/>
+	<action code="ScanRestart2('ImageWidth', 'Color-Mode', 8.73)"/>
+	<action code="ScanRestart2('ImageWidth', 'Color-Mode', 9.73)"/>
+	<action code="Boundary('Acq/B-Mode/Display/Width', 'WidthUp')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0023 -->
+	<action code="=($logmsg, 'TST-28-0023:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="DepthOffset('Color-Mode', 1)"/>
+	<action code="ScanRestart3('ImageDepth', 'Color-Mode', 3, 'out of range')"/>
+	<action code="ScanRestart3('ImageDepth', 'Color-Mode', 4, 'in range')"/>
+	<action code="ScanRestart3('ImageDepth', 'Color-Mode', 5, 'in range')"/>
+	<action code="ScanRestart3('ImageDepth', 'Color-Mode', 6, 'in range')"/>
+	<action code="ScanRestart3('ImageDepth', 'Color-Mode', 7, 'in range')"/>
+	<action code="ScanRestart3('ImageDepth', 'Color-Mode', 8, 'in range')"/>
+	<action code="ScanRestart3('ImageDepth', 'Color-Mode', 9, 'in range')"/>
+	<action code="ScanRestart3('ImageDepth', 'Color-Mode', 10, 'in range')"/>
+	<action code="ScanRestart3('ImageDepth', 'Color-Mode', 11, 'out of range')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0024 -->
+	<action code="=($logmsg, 'TST-28-0024:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="DepthOffset('Color-Mode', 1)"/>
+	<action code="ImageDepth('Color-Mode', 10, 'in range')"/>
+	<action code="ScanRestart2('DepthOffset', 'Color-Mode', 1)"/>
+	<action code="Boundary('Acq/B-Mode/Display/Delay', 'DepthOffsetUp')"/>
+	<action code="ScanRestart2('DepthOffset', 'Color-Mode', 2)"/>
+	<action code="ScanRestart2('DepthOffset', 'Color-Mode', 3)"/>
+	<action code="ScanRestart2('DepthOffset', 'Color-Mode', 4)"/>
+	<action code="ScanRestart2('DepthOffset', 'Color-Mode', 5)"/>
+	<action code="ScanRestart2('DepthOffset', 'Color-Mode', 6)"/>
+	<action code="ScanRestart2('DepthOffset', 'Color-Mode', 7)"/>
+	<action code="ScanRestart2('DepthOffset', 'Color-Mode', 8)"/>
+	<action code="Boundary('Acq/B-Mode/Display/Delay', 'DepthOffsetDown')"/>
+	<action code="ScanRestart2('DepthOffset', 'Color-Mode', 1)"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0025 -->
+	<action code="=($logmsg, 'TST-28-0025:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="BoxSize('min')"/>
+	<action code="BoxPosition('top')"/>
+	<action code="ScanRestart2('PRF', 'Color-Mode', 1000)"/>
+	<action code="Boundary('Acq/Color-Mode/Tx/PRF-Display', 'VelocityDown')"/>
+	<action code="ScanRestart2('PRF', 'Color-Mode', 1500)"/>
+	<action code="ScanRestart2('PRF', 'Color-Mode', 2000)"/>
+	<action code="ScanRestart2('PRF', 'Color-Mode', 3000)"/>
+	<action code="ScanRestart2('PRF', 'Color-Mode', 4000)"/>
+	<action code="ScanRestart2('PRF', 'Color-Mode', 5000)"/>
+	<action code="ScanRestart2('PRF', 'Color-Mode', 6000)"/>
+	<action code="ScanRestart2('PRF', 'Color-Mode', 7000)"/>
+	<action code="ScanRestart2('PRF', 'Color-Mode', 8000)"/>
+	<action code="ScanRestart2('PRF', 'Color-Mode', 9000)"/>
+	<action code="ScanRestart2('PRF', 'Color-Mode', 10000)"/>
+	<action code="ScanRestart2('PRF', 'Color-Mode', 12500)"/>
+	<action code="ScanRestart2('PRF', 'Color-Mode', 15000)"/>
+	<action code="ScanRestart2('PRF', 'Color-Mode', 17500)"/>
+	<action code="ScanRestart2('PRF', 'Color-Mode', 20000)"/>
+	<action code="ScanRestart2('PRF', 'Color-Mode', 25000)"/>
+	<action code="ScanRestart2('PRF', 'Color-Mode', 30000)"/>
+	<action code="ScanRestart2('PRF', 'Color-Mode', 35000)"/>
+	<action code="ScanRestart2('PRF', 'Color-Mode', 40000)"/>
+	<action code="ScanRestart2('PRF', 'Color-Mode', 50000)"/>
+	<action code="Boundary('Acq/Color-Mode/Tx/PRF-Display', 'VelocityUp')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0026 -->
+	<action code="=($logmsg, 'TST-28-0026:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="ScanRestart3('Frequency', 'Color-Mode', 40000000, 40000000)"/>
+	<action code="Boundary('Acq/Color-Mode/Tx/Frequency', 'TxFrequencyUp')"/>
+	<action code="Boundary('Acq/Color-Mode/Tx/Frequency', 'TxFrequencyDown')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0027 -->
+	<action code="=($logmsg, 'TST-28-0027:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="PauseScan()"/>
+	<!-- action code="InitializeTransducerSim('MS-700', 'General Imaging')"/ -->	<!-- with simulator -->
+	<action code="InitializeTransducer('MS-700', 'General Imaging')"/>	<!-- on system -->
+	<sleep time="10000"/>
+	<action code="StartScan('ColorMode')"/>
+	<sleep time="1000"/>
+	<cmd code="TxFrequencyUp"/>
+	<sleep time="1000"/>
+	<action code="TxValues('Color-Mode', 'TXAE', 0)"/>
+	<action code="TxValues('Color-Mode', 'TXAH', 30)"/>
+	<action code="TxValues('Color-Mode', 'TXAM', 31)"/>
+	<action code="TxValues('Color-Mode', 'TXB', 15)"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0028 -->
+	<action code="=($logmsg, 'TST-28-0028:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="PauseScan()"/>
+	<!-- action code="InitializeTransducerSim('MS-700', 'Cardiology')"/ -->	<!-- with simulator -->
+	<action code="InitializeTransducer('MS-700', 'Cardiology')"/>	<!-- on system -->
+	<sleep time="10000"/>
+	<action code="StartScan('ColorMode')"/>
+	<sleep time="1000"/>
+	<cmd code="TxFrequencyUp"/>
+	<sleep time="1000"/>
+	<action code="TxValues('Color-Mode', 'TXAE', 0)"/>
+	<action code="TxValues('Color-Mode', 'TXAH', 30)"/>
+	<action code="TxValues('Color-Mode', 'TXAM', 31)"/>
+	<action code="TxValues('Color-Mode', 'TXB', 15)"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0029 -->
+	<action code="=($logmsg, 'TST-28-0029:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="TxCycles('Color-Mode', 1, 6, 'same')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0030 -->
+	<action code="=($logmsg, 'TST-28-0030:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="ScanRestart2('Gate', 'Color-Mode', 1)"/>
+	<action code="Boundary('Acq/Color-Mode/Tx/Cycles', 'SvSizeDown')"/>
+	<action code="ScanRestart2('Gate', 'Color-Mode', 2)"/>
+	<action code="ScanRestart2('Gate', 'Color-Mode', 3)"/>
+	<action code="ScanRestart2('Gate', 'Color-Mode', 4)"/>
+	<action code="ScanRestart2('Gate', 'Color-Mode', 5)"/>
+	<action code="ScanRestart2('Gate', 'Color-Mode', 6)"/>
+	<action code="Boundary('Acq/Color-Mode/Tx/Cycles', 'SvSizeUp')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0031 -->
+	<action code="=($logmsg, 'TST-28-0031:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="GainDoppler('Color-Mode', 0, 60, 1, 'yes', 'yes')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0032 -->
+	<action code="=($logmsg, 'TST-28-0032:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="Gate('Color-Mode', 1)"/>	<!-- use smallest Gate to reach lower TxPower -->
+	<action code="=($same, ScanRestart2('TxPower', 'Color-Mode', 1))"/>
+	<action code="VoltageDoppler('Color-Mode', $same, 0.038, 20.0, 11.2, 22.7)"/>
+	<action code="Boundary('Acq/Color-Mode/Tx/Power', 'TxPowerDown')"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Color-Mode', 2))"/>
+	<action code="VoltageDoppler('Color-Mode', $same, 0.038, 20.0, 11.2, 22.7)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Color-Mode', 3))"/>
+	<action code="VoltageDoppler('Color-Mode', $same, 0.038, 20.0, 11.2, 22.7)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Color-Mode', 4))"/>
+	<action code="VoltageDoppler('Color-Mode', $same, 0.038, 20.0, 11.2, 22.7)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Color-Mode', 5))"/>
+	<action code="VoltageDoppler('Color-Mode', $same, 0.038, 20.0, 11.2, 22.7)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Color-Mode', 6))"/>
+	<action code="VoltageDoppler('Color-Mode', $same, 0.038, 20.0, 11.2, 22.7)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Color-Mode', 7))"/>
+	<action code="VoltageDoppler('Color-Mode', $same, 0.038, 20.0, 11.2, 22.7)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Color-Mode', 8))"/>
+	<action code="VoltageDoppler('Color-Mode', $same, 0.038, 20.0, 11.2, 22.7)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Color-Mode', 9))"/>
+	<action code="VoltageDoppler('Color-Mode', $same, 0.038, 20.0, 11.2, 22.7)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Color-Mode', 10))"/>
+	<action code="VoltageDoppler('Color-Mode', $same, 0.038, 20.0, 11.2, 22.7)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Color-Mode', 20))"/>
+	<action code="VoltageDoppler('Color-Mode', $same, 0.038, 20.0, 11.2, 22.7)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Color-Mode', 30))"/>
+	<action code="VoltageDoppler('Color-Mode', $same, 0.038, 20.0, 11.2, 22.7)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Color-Mode', 40))"/>
+	<action code="VoltageDoppler('Color-Mode', $same, 0.038, 20.0, 11.2, 22.7)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Color-Mode', 50))"/>
+	<action code="VoltageDoppler('Color-Mode', $same, 0.038, 20.0, 11.2, 22.7)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Color-Mode', 60))"/>
+	<action code="VoltageDoppler('Color-Mode', $same, 0.038, 20.0, 11.2, 22.7)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Color-Mode', 70))"/>
+	<action code="VoltageDoppler('Color-Mode', $same, 0.038, 20.0, 11.2, 22.7)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Color-Mode', 80))"/>
+	<action code="VoltageDoppler('Color-Mode', $same, 0.038, 20.0, 11.2, 22.7)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Color-Mode', 90))"/>
+	<action code="VoltageDoppler('Color-Mode', $same, 0.038, 20.0, 11.2, 22.7)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Color-Mode', 100))"/>
+	<action code="VoltageDoppler('Color-Mode', $same, 0.038, 20.0, 11.2, 22.7)"/>
+	<action code="Boundary('Acq/Color-Mode/Tx/Power', 'TxPowerUp')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0033 -->
+	<action code="=($logmsg, 'TST-28-0033:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="ScanRestart2('Persist5', 'Color-Mode', 'Off')"/>
+	<action code="Boundary('Acq/Color-Mode/Display/Persist-Name', 'PersistDown')"/>
+	<action code="ScanRestart2('Persist5', 'Color-Mode', 'Low')"/>
+	<action code="ScanRestart2('Persist5', 'Color-Mode', 'Med')"/>
+	<action code="ScanRestart2('Persist5', 'Color-Mode', 'High')"/>
+	<action code="ScanRestart2('Persist5', 'Color-Mode', 'Max')"/>
+	<action code="Boundary('Acq/Color-Mode/Display/Persist-Name', 'PersistUp')"/>
+	<action code="ScanRestart2('Persist5', 'Color-Mode', 'Off')"/>		<!-- set back to original value -->
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0034 -->
+	<action code="=($logmsg, 'TST-28-0034:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="Frequency('Color-Mode', 40000000, 40000000)"/>
+	<action code="ScanRestart3('BeamAngle', 'Color-Mode', -15, 'in range')"/>
+	<action code="ScanRestart3('BeamAngle', 'Color-Mode', 0, 'in range')"/>
+	<action code="ScanRestart3('BeamAngle', 'Color-Mode', 15, 'in range')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- PW Doppler Mode -->
+	<action code="=($logmsg, 'PW Doppler Mode')"/>
+	<log level="warning">script:$logmsg</log>
+	
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+	
+	<!-- TST-28-0035 -->
+	<action code="=($logmsg, 'TST-28-0035:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="PauseScan()"/>
+	<!-- action code="InitializeTransducerSim('MS-700', 'General Imaging')"/ -->	<!-- with simulator -->
+	<action code="InitializeTransducer('MS-700', 'General Imaging')"/>	<!-- on system -->
+	<sleep time="10000"/>
+	<action code="StartScan('PwMode')"/>
+
+	<action code="PauseScan()"/>
+	<!-- action code="InitializeTransducerSim('MS-700', 'Cardiology')"/ -->	<!-- with simulator -->
+	<action code="InitializeTransducer('MS-700', 'Cardiology')"/>	<!-- on system -->
+	<sleep time="10000"/>
+	<action code="StartScan('PwMode')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+	
+	<!-- TST-28-0036 -->
+	<action code="=($logmsg, 'TST-28-0036:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="ScanRestart3('Frequency', 'Pw-Mode', 40000000, 40000000)"/>
+	<action code="Boundary('Acq/Pw-Mode/Tx/Frequency', 'TxFrequencyUp')"/>
+	<action code="Boundary('Acq/Pw-Mode/Tx/Frequency', 'TxFrequencyDown')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+	
+	<!-- TST-28-0037 & TST-28-0041 & TST-28-0043 -->
+	<action code="=($logmsg, 'TST-28-0037 and TST-28-0041 and TST-28-0043:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="BoxPosition('top')"/>
+	<action code="=($same, ScanRestart2('PRF', 'Pw-Mode', 2000))"/>
+	<action code="TxCycles('Pw-Mode', 2, 20, $same)"/>
+	<action code="WallFilterToggle()"/>
+	<action code="Boundary('Acq/Pw-Mode/Tx/PRF-Display', 'VelocityDown')"/>
+	<action code="=($same, ScanRestart2('PRF', 'Pw-Mode', 3000))"/>
+	<action code="TxCycles('Pw-Mode', 2, 20, $same)"/>
+	<action code="WallFilterToggle()"/>
+	<action code="=($same, ScanRestart2('PRF', 'Pw-Mode', 4000))"/>
+	<action code="TxCycles('Pw-Mode', 2, 20, $same)"/>
+	<action code="WallFilterToggle()"/>
+	<action code="=($same, ScanRestart2('PRF', 'Pw-Mode', 5000))"/>
+	<action code="TxCycles('Pw-Mode', 2, 20, $same)"/>
+	<action code="WallFilterToggle()"/>
+	<action code="=($same, ScanRestart2('PRF', 'Pw-Mode', 6000))"/>
+	<action code="TxCycles('Pw-Mode', 2, 20, $same)"/>
+	<action code="WallFilterToggle()"/>
+	<action code="=($same, ScanRestart2('PRF', 'Pw-Mode', 7000))"/>
+	<action code="TxCycles('Pw-Mode', 2, 20, $same)"/>
+	<action code="WallFilterToggle()"/>
+	<action code="=($same, ScanRestart2('PRF', 'Pw-Mode', 8000))"/>
+	<action code="TxCycles('Pw-Mode', 2, 20, $same)"/>
+	<action code="WallFilterToggle()"/>
+	<action code="=($same, ScanRestart2('PRF', 'Pw-Mode', 9000))"/>
+	<action code="TxCycles('Pw-Mode', 2, 20, $same)"/>
+	<action code="WallFilterToggle()"/>
+	<action code="=($same, ScanRestart2('PRF', 'Pw-Mode', 10000))"/>
+	<action code="TxCycles('Pw-Mode', 2, 20, $same)"/>
+	<action code="WallFilterToggle()"/>
+	<action code="=($same, ScanRestart2('PRF', 'Pw-Mode', 15000))"/>
+	<action code="TxCycles('Pw-Mode', 2, 18, $same)"/>
+	<action code="WallFilterToggle()"/>
+	<action code="=($same, ScanRestart2('PRF', 'Pw-Mode', 20000))"/>
+	<action code="TxCycles('Pw-Mode', 2, 18, $same)"/>
+	<action code="WallFilterToggle()"/>
+	<action code="=($same, ScanRestart2('PRF', 'Pw-Mode', 25000))"/>
+	<action code="TxCycles('Pw-Mode', 2, 16, $same)"/>
+	<action code="WallFilterToggle()"/>
+	<action code="=($same, ScanRestart2('PRF', 'Pw-Mode', 30000))"/>
+	<action code="TxCycles('Pw-Mode', 2, 14, $same)"/>
+	<action code="WallFilterToggle()"/>
+	<action code="=($same, ScanRestart2('PRF', 'Pw-Mode', 40000))"/>
+	<action code="TxCycles('Pw-Mode', 2, 14, $same)"/>
+	<action code="WallFilterToggle()"/>
+	<action code="=($same, ScanRestart2('PRF', 'Pw-Mode', 50000))"/>
+	<action code="TxCycles('Pw-Mode', 2, 12, $same)"/>
+	<action code="WallFilterToggle()"/>
+	<action code="=($same, ScanRestart2('PRF', 'Pw-Mode', 75000))"/>
+	<action code="TxCycles('Pw-Mode', 2, 8, $same)"/>
+	<action code="WallFilterToggle()"/>
+	<action code="=($same, ScanRestart2('PRF', 'Pw-Mode', 100000))"/>
+	<action code="TxCycles('Pw-Mode', 2, 6, $same)"/>
+	<action code="WallFilterToggle()"/>
+	<action code="=($same, ScanRestart2('PRF', 'Pw-Mode', 125000))"/>
+	<action code="TxCycles('Pw-Mode', 2, 5, $same)"/>
+	<action code="WallFilterToggle()"/>
+	<action code="Boundary('Acq/Pw-Mode/Tx/PRF-Display', 'VelocityUp')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+	
+	<!-- TST-28-0038 -->
+	<action code="=($logmsg, 'TST-28-0038:')"/>
+	<log level="warning">script:$logmsg</log>
+	
+	<action code="PauseScan()"/>
+	<!-- action code="InitializeTransducerSim('MS-700', 'Cardiology')"/ -->	<!-- with simulator -->
+	<action code="InitializeTransducer('MS-700', 'Cardiology')"/>	<!-- on system -->
+	<sleep time="10000"/>
+	<action code="StartScan('PwMode')"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Pw-Mode', 1))"/>
+	<action code="VoltagePw('Pw-Mode', $same, 20.0, 0.0013125)"/>
+	<action code="Boundary('Acq/Pw-Mode/Tx/Power', 'TxPowerDown')"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Pw-Mode', 2))"/>
+	<action code="VoltagePw('Pw-Mode', $same, 20.0, 0.0013125)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Pw-Mode', 3))"/>
+	<action code="VoltagePw('Pw-Mode', $same, 20.0, 0.0013125)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Pw-Mode', 4))"/>
+	<action code="VoltagePw('Pw-Mode', $same, 20.0, 0.0013125)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Pw-Mode', 5))"/>
+	<action code="VoltagePw('Pw-Mode', $same, 20.0, 0.0013125)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Pw-Mode', 6))"/>
+	<action code="VoltagePw('Pw-Mode', $same, 20.0, 0.0013125)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Pw-Mode', 7))"/>
+	<action code="VoltagePw('Pw-Mode', $same, 20.0, 0.0013125)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Pw-Mode', 8))"/>
+	<action code="VoltagePw('Pw-Mode', $same, 20.0, 0.0013125)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Pw-Mode', 9))"/>
+	<action code="VoltagePw('Pw-Mode', $same, 20.0, 0.0013125)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Pw-Mode', 10))"/>
+	<action code="VoltagePw('Pw-Mode', $same, 20.0, 0.0013125)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Pw-Mode', 20))"/>
+	<action code="VoltagePw('Pw-Mode', $same, 20.0, 0.0013125)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Pw-Mode', 30))"/>
+	<action code="VoltagePw('Pw-Mode', $same, 20.0, 0.0013125)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Pw-Mode', 40))"/>
+	<action code="VoltagePw('Pw-Mode', $same, 20.0, 0.0013125)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Pw-Mode', 50))"/>
+	<action code="VoltagePw('Pw-Mode', $same, 20.0, 0.0013125)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Pw-Mode', 60))"/>
+	<action code="VoltagePw('Pw-Mode', $same, 20.0, 0.0013125)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Pw-Mode', 70))"/>
+	<action code="VoltagePw('Pw-Mode', $same, 20.0, 0.0013125)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Pw-Mode', 80))"/>
+	<action code="VoltagePw('Pw-Mode', $same, 20.0, 0.0013125)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Pw-Mode', 90))"/>
+	<action code="VoltagePw('Pw-Mode', $same, 20.0, 0.0013125)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Pw-Mode', 100))"/>
+	<action code="VoltagePw('Pw-Mode', $same, 20.0, 0.0013125)"/>
+	<action code="Boundary('Acq/Pw-Mode/Tx/Power', 'TxPowerUp')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0039 -->
+	<action code="=($logmsg, 'TST-28-0039:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="GainDoppler('Pw-Mode', 0, 60, 1, 'yes', 'yes')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0040 -->
+	<action code="=($logmsg, 'TST-28-0040:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="BoxPosition('top')"/>
+	<action code="PRF('Pw-Mode', 2000)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Mode', 2, 2))"/>
+	<action code="SVLength('Pw-Mode', $same)"/>
+	<action code="Boundary('Acq/Pw-Mode/PwModeSoft/SV-Size', 'SvSizeDown')"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Mode', 4, 2))"/>
+	<action code="SVLength('Pw-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Mode', 4, 3))"/>
+	<action code="SVLength('Pw-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Mode', 4, 4))"/>
+	<action code="SVLength('Pw-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Mode', 6, 4))"/>
+	<action code="SVLength('Pw-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Mode', 6, 5))"/>
+	<action code="SVLength('Pw-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Mode', 6, 6))"/>
+	<action code="SVLength('Pw-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Mode', 8, 6))"/>
+	<action code="SVLength('Pw-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Mode', 8, 7))"/>
+	<action code="SVLength('Pw-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Mode', 8, 8))"/>
+	<action code="SVLength('Pw-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Mode', 10, 8))"/>
+	<action code="SVLength('Pw-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Mode', 10, 9))"/>
+	<action code="SVLength('Pw-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Mode', 10, 10))"/>
+	<action code="SVLength('Pw-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Mode', 12, 10))"/>
+	<action code="SVLength('Pw-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Mode', 12, 11))"/>
+	<action code="SVLength('Pw-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Mode', 12, 12))"/>
+	<action code="SVLength('Pw-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Mode', 14, 12))"/>
+	<action code="SVLength('Pw-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Mode', 14, 13))"/>
+	<action code="SVLength('Pw-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Mode', 14, 14))"/>
+	<action code="SVLength('Pw-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Mode', 16, 14))"/>
+	<action code="SVLength('Pw-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Mode', 16, 15))"/>
+	<action code="SVLength('Pw-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Mode', 16, 16))"/>
+	<action code="SVLength('Pw-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Mode', 18, 16))"/>
+	<action code="SVLength('Pw-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Mode', 18, 17))"/>
+	<action code="SVLength('Pw-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Mode', 18, 18))"/>
+	<action code="SVLength('Pw-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Mode', 20, 18))"/>
+	<action code="SVLength('Pw-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Mode', 20, 19))"/>
+	<action code="SVLength('Pw-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Mode', 20, 20))"/>
+	<action code="SVLength('Pw-Mode', $same)"/>
+	<action code="Boundary('Acq/Pw-Mode/PwModeSoft/SV-Size', 'SvSizeUp')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+	
+	<!-- TST-28-0042 -->
+	<action code="=($logmsg, 'TST-28-0042:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="ScanRestart2('Baseline', 'Pw-Mode', -50)"/>
+	<action code="Boundary('Acq/Pw-Mode/PwModeSoft/Display-Baseline', 'BaselineDown')"/>
+	<action code="ScanRestart2('Baseline', 'Pw-Mode', -40)"/>
+	<action code="ScanRestart2('Baseline', 'Pw-Mode', -30)"/>
+	<action code="ScanRestart2('Baseline', 'Pw-Mode', -20)"/>
+	<action code="ScanRestart2('Baseline', 'Pw-Mode', -10)"/>
+	<action code="ScanRestart2('Baseline', 'Pw-Mode', 0)"/>
+	<action code="ScanRestart2('Baseline', 'Pw-Mode', 10)"/>
+	<action code="ScanRestart2('Baseline', 'Pw-Mode', 20)"/>
+	<action code="ScanRestart2('Baseline', 'Pw-Mode', 30)"/>
+	<action code="ScanRestart2('Baseline', 'Pw-Mode', 40)"/>
+	<action code="ScanRestart2('Baseline', 'Pw-Mode', 50)"/>
+	<action code="Boundary('Acq/Pw-Mode/PwModeSoft/Display-Baseline', 'BaselineUp')"/>
+	<action code="Baseline('Pw-Mode', 0)"/>		<!-- set back to original value -->
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0044 -->
+	<action code="=($logmsg, 'TST-28-0044:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="Frequency('Pw-Mode', 40000000, 40000000)"/>
+	<action code="ScanRestart3('BeamAngle', 'Pw-Mode', -15, 'in range')"/>
+	<action code="ScanRestart3('BeamAngle', 'Pw-Mode', 0, 'in range')"/>
+	<action code="ScanRestart3('BeamAngle', 'Pw-Mode', 15, 'in range')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+	
+	<!-- PW Tissue Doppler Mode -->
+	<action code="=($logmsg, 'PW Tissue Doppler Mode')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0046 -->
+	<action code="=($logmsg, 'TST-28-0046:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="PauseScan()"/>
+	<!-- action code="InitializeTransducerSim('MS-700', 'General Imaging')"/ -->	<!-- with simulator -->
+	<action code="InitializeTransducer('MS-700', 'General Imaging')"/>	<!-- on system -->
+	<sleep time="10000"/>
+	<action code="StartScan('TissueMode')"/>
+
+	<action code="PauseScan()"/>
+	<!-- action code="InitializeTransducerSim('MS-700', 'Cardiology')"/ -->	<!-- with simulator -->
+	<action code="InitializeTransducer('MS-700', 'Cardiology')"/>	<!-- on system -->
+	<sleep time="10000"/>
+	<action code="StartScan('TissueMode')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0047 -->
+	<action code="=($logmsg, 'TST-28-0047:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="ScanRestart3('Frequency', 'Pw-Tissue-Mode', 40000000, 40000000)"/>
+	<action code="Boundary('Acq/Pw-Tissue-Mode/Tx/Frequency', 'TxFrequencyUp')"/>
+	<action code="Boundary('Acq/Pw-Tissue-Mode/Tx/Frequency', 'TxFrequencyDown')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0048 & TST-28-0053 -->
+	<action code="=($logmsg, 'TST-28-0048 and TST-28-0053:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="BoxPosition('top')"/>
+	<action code="=($same, ScanRestart2('PRF', 'Pw-Tissue-Mode', 2000))"/>
+	<action code="TxCycles('Pw-Tissue-Mode', 2, 20, $same)"/>
+	<action code="Boundary('Acq/Pw-Tissue-Mode/Tx/PRF-Display', 'VelocityDown')"/>
+	<action code="=($same, ScanRestart2('PRF', 'Pw-Tissue-Mode', 3000))"/>
+	<action code="TxCycles('Pw-Tissue-Mode', 2, 20, $same)"/>
+	<action code="=($same, ScanRestart2('PRF', 'Pw-Tissue-Mode', 4000))"/>
+	<action code="TxCycles('Pw-Tissue-Mode', 2, 20, $same)"/>
+	<action code="=($same, ScanRestart2('PRF', 'Pw-Tissue-Mode', 5000))"/>
+	<action code="TxCycles('Pw-Tissue-Mode', 2, 20, $same)"/>
+	<action code="=($same, ScanRestart2('PRF', 'Pw-Tissue-Mode', 6000))"/>
+	<action code="TxCycles('Pw-Tissue-Mode', 2, 20, $same)"/>
+	<action code="=($same, ScanRestart2('PRF', 'Pw-Tissue-Mode', 7000))"/>
+	<action code="TxCycles('Pw-Tissue-Mode', 2, 20, $same)"/>
+	<action code="=($same, ScanRestart2('PRF', 'Pw-Tissue-Mode', 8000))"/>
+	<action code="TxCycles('Pw-Tissue-Mode', 2, 20, $same)"/>
+	<action code="=($same, ScanRestart2('PRF', 'Pw-Tissue-Mode', 9000))"/>
+	<action code="TxCycles('Pw-Tissue-Mode', 2, 20, $same)"/>
+	<action code="=($same, ScanRestart2('PRF', 'Pw-Tissue-Mode', 10000))"/>
+	<action code="TxCycles('Pw-Tissue-Mode', 2, 20, $same)"/>
+	<action code="=($same, ScanRestart2('PRF', 'Pw-Tissue-Mode', 15000))"/>
+	<action code="TxCycles('Pw-Tissue-Mode', 2, 18, $same)"/>
+	<action code="=($same, ScanRestart2('PRF', 'Pw-Tissue-Mode', 20000))"/>
+	<action code="TxCycles('Pw-Tissue-Mode', 2, 18, $same)"/>
+	<action code="=($same, ScanRestart2('PRF', 'Pw-Tissue-Mode', 25000))"/>
+	<action code="TxCycles('Pw-Tissue-Mode', 2, 16, $same)"/>
+	<action code="=($same, ScanRestart2('PRF', 'Pw-Tissue-Mode', 30000))"/>
+	<action code="TxCycles('Pw-Tissue-Mode', 2, 14, $same)"/>
+	<action code="=($same, ScanRestart2('PRF', 'Pw-Tissue-Mode', 40000))"/>
+	<action code="TxCycles('Pw-Tissue-Mode', 2, 14, $same)"/>
+	<action code="=($same, ScanRestart2('PRF', 'Pw-Tissue-Mode', 50000))"/>
+	<action code="TxCycles('Pw-Tissue-Mode', 2, 12, $same)"/>
+	<action code="=($same, ScanRestart2('PRF', 'Pw-Tissue-Mode', 75000))"/>
+	<action code="TxCycles('Pw-Tissue-Mode', 2, 8, $same)"/>
+	<action code="=($same, ScanRestart2('PRF', 'Pw-Tissue-Mode', 100000))"/>
+	<action code="TxCycles('Pw-Tissue-Mode', 2, 6, $same)"/>
+	<action code="=($same, ScanRestart2('PRF', 'Pw-Tissue-Mode', 125000))"/>
+	<action code="TxCycles('Pw-Tissue-Mode', 2, 5, $same)"/>
+	<action code="Boundary('Acq/Pw-Tissue-Mode/Tx/PRF-Display', 'VelocityUp')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0049 -->
+	<action code="=($logmsg, 'TST-28-0049:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="PauseScan()"/>
+	<!-- action code="InitializeTransducerSim('MS-700', 'Cardiology')"/ -->	<!-- with simulator -->
+	<action code="InitializeTransducer('MS-700', 'Cardiology')"/>	<!-- on system -->
+	<sleep time="10000"/>
+	<action code="StartScan('TissueMode')"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Pw-Tissue-Mode', 1))"/>
+	<action code="VoltagePw('Pw-Tissue-Mode', $same, 20.0, 0.0013125)"/>
+	<action code="Boundary('Acq/Pw-Tissue-Mode/Tx/Power', 'TxPowerDown')"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Pw-Tissue-Mode', 2))"/>
+	<action code="VoltagePw('Pw-Tissue-Mode', $same, 20.0, 0.0013125)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Pw-Tissue-Mode', 3))"/>
+	<action code="VoltagePw('Pw-Tissue-Mode', $same, 20.0, 0.0013125)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Pw-Tissue-Mode', 4))"/>
+	<action code="VoltagePw('Pw-Tissue-Mode', $same, 20.0, 0.0013125)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Pw-Tissue-Mode', 5))"/>
+	<action code="VoltagePw('Pw-Tissue-Mode', $same, 20.0, 0.0013125)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Pw-Tissue-Mode', 6))"/>
+	<action code="VoltagePw('Pw-Tissue-Mode', $same, 20.0, 0.0013125)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Pw-Tissue-Mode', 7))"/>
+	<action code="VoltagePw('Pw-Tissue-Mode', $same, 20.0, 0.0013125)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Pw-Tissue-Mode', 8))"/>
+	<action code="VoltagePw('Pw-Tissue-Mode', $same, 20.0, 0.0013125)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Pw-Tissue-Mode', 9))"/>
+	<action code="VoltagePw('Pw-Tissue-Mode', $same, 20.0, 0.0013125)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Pw-Tissue-Mode', 10))"/>
+	<action code="VoltagePw('Pw-Tissue-Mode', $same, 20.0, 0.0013125)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Pw-Tissue-Mode', 20))"/>
+	<action code="VoltagePw('Pw-Tissue-Mode', $same, 20.0, 0.0013125)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Pw-Tissue-Mode', 30))"/>
+	<action code="VoltagePw('Pw-Tissue-Mode', $same, 20.0, 0.0013125)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Pw-Tissue-Mode', 40))"/>
+	<action code="VoltagePw('Pw-Tissue-Mode', $same, 20.0, 0.0013125)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Pw-Tissue-Mode', 50))"/>
+	<action code="VoltagePw('Pw-Tissue-Mode', $same, 20.0, 0.0013125)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Pw-Tissue-Mode', 60))"/>
+	<action code="VoltagePw('Pw-Tissue-Mode', $same, 20.0, 0.0013125)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Pw-Tissue-Mode', 70))"/>
+	<action code="VoltagePw('Pw-Tissue-Mode', $same, 20.0, 0.0013125)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Pw-Tissue-Mode', 80))"/>
+	<action code="VoltagePw('Pw-Tissue-Mode', $same, 20.0, 0.0013125)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Pw-Tissue-Mode', 90))"/>
+	<action code="VoltagePw('Pw-Tissue-Mode', $same, 20.0, 0.0013125)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Pw-Tissue-Mode', 100))"/>
+	<action code="VoltagePw('Pw-Tissue-Mode', $same, 20.0, 0.0013125)"/>
+	<action code="Boundary('Acq/Pw-Tissue-Mode/Tx/Power', 'TxPowerUp')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0050 -->
+	<action code="=($logmsg, 'TST-28-0050:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="GainDoppler('Pw-Tissue-Mode', 0, 60, 1, 'yes', 'yes')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0051 -->
+	<action code="=($logmsg, 'TST-28-0051:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="BoxPosition('top')"/>
+	<action code="PRF('Pw-Tissue-Mode', 2000)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Tissue-Mode', 2, 2))"/>
+	<action code="SVLength('Pw-Tissue-Mode', $same)"/>
+	<action code="Boundary('Acq/Pw-Tissue-Mode/PwModeSoft/SV-Size', 'SvSizeDown')"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Tissue-Mode', 4, 2))"/>
+	<action code="SVLength('Pw-Tissue-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Tissue-Mode', 4, 3))"/>
+	<action code="SVLength('Pw-Tissue-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Tissue-Mode', 4, 4))"/>
+	<action code="SVLength('Pw-Tissue-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Tissue-Mode', 6, 4))"/>
+	<action code="SVLength('Pw-Tissue-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Tissue-Mode', 6, 5))"/>
+	<action code="SVLength('Pw-Tissue-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Tissue-Mode', 6, 6))"/>
+	<action code="SVLength('Pw-Tissue-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Tissue-Mode', 8, 6))"/>
+	<action code="SVLength('Pw-Tissue-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Tissue-Mode', 8, 7))"/>
+	<action code="SVLength('Pw-Tissue-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Tissue-Mode', 8, 8))"/>
+	<action code="SVLength('Pw-Tissue-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Tissue-Mode', 10, 8))"/>
+	<action code="SVLength('Pw-Tissue-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Tissue-Mode', 10, 9))"/>
+	<action code="SVLength('Pw-Tissue-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Tissue-Mode', 10, 10))"/>
+	<action code="SVLength('Pw-Tissue-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Tissue-Mode', 12, 10))"/>
+	<action code="SVLength('Pw-Tissue-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Tissue-Mode', 12, 11))"/>
+	<action code="SVLength('Pw-Tissue-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Tissue-Mode', 12, 12))"/>
+	<action code="SVLength('Pw-Tissue-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Tissue-Mode', 14, 12))"/>
+	<action code="SVLength('Pw-Tissue-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Tissue-Mode', 14, 13))"/>
+	<action code="SVLength('Pw-Tissue-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Tissue-Mode', 14, 14))"/>
+	<action code="SVLength('Pw-Tissue-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Tissue-Mode', 16, 14))"/>
+	<action code="SVLength('Pw-Tissue-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Tissue-Mode', 16, 15))"/>
+	<action code="SVLength('Pw-Tissue-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Tissue-Mode', 16, 16))"/>
+	<action code="SVLength('Pw-Tissue-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Tissue-Mode', 18, 16))"/>
+	<action code="SVLength('Pw-Tissue-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Tissue-Mode', 18, 17))"/>
+	<action code="SVLength('Pw-Tissue-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Tissue-Mode', 18, 18))"/>
+	<action code="SVLength('Pw-Tissue-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Tissue-Mode', 20, 18))"/>
+	<action code="SVLength('Pw-Tissue-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Tissue-Mode', 20, 19))"/>
+	<action code="SVLength('Pw-Tissue-Mode', $same)"/>
+	<action code="=($same, ScanRestart3('GatePw', 'Pw-Tissue-Mode', 20, 20))"/>
+	<action code="SVLength('Pw-Tissue-Mode', $same)"/>
+	<action code="Boundary('Acq/Pw-Tissue-Mode/PwModeSoft/SV-Size', 'SvSizeUp')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0054 -->
+	<action code="=($logmsg, 'TST-28-0054:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="ScanRestart2('Baseline', 'Pw-Tissue-Mode', -50)"/>
+	<action code="Boundary('Acq/Pw-Tissue-Mode/PwModeSoft/Display-Baseline', 'BaselineDown')"/>
+	<action code="ScanRestart2('Baseline', 'Pw-Tissue-Mode', -40)"/>
+	<action code="ScanRestart2('Baseline', 'Pw-Tissue-Mode', -30)"/>
+	<action code="ScanRestart2('Baseline', 'Pw-Tissue-Mode', -20)"/>
+	<action code="ScanRestart2('Baseline', 'Pw-Tissue-Mode', -10)"/>
+	<action code="ScanRestart2('Baseline', 'Pw-Tissue-Mode', 0)"/>
+	<action code="ScanRestart2('Baseline', 'Pw-Tissue-Mode', 10)"/>
+	<action code="ScanRestart2('Baseline', 'Pw-Tissue-Mode', 20)"/>
+	<action code="ScanRestart2('Baseline', 'Pw-Tissue-Mode', 30)"/>
+	<action code="ScanRestart2('Baseline', 'Pw-Tissue-Mode', 40)"/>
+	<action code="ScanRestart2('Baseline', 'Pw-Tissue-Mode', 50)"/>
+	<action code="Boundary('Acq/Pw-Tissue-Mode/PwModeSoft/Display-Baseline', 'BaselineUp')"/>
+	<action code="Baseline('Pw-Tissue-Mode', 0)"/>		<!-- set back to original value -->
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0055 -->
+	<action code="=($logmsg, 'TST-28-0055:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="Frequency('Pw-Tissue-Mode', 40000000, 40000000)"/>
+	<action code="ScanRestart3('BeamAngle', 'Pw-Tissue-Mode', -15, 'in range')"/>
+	<action code="ScanRestart3('BeamAngle', 'Pw-Tissue-Mode', 0, 'in range')"/>
+	<action code="ScanRestart3('BeamAngle', 'Pw-Tissue-Mode', 15, 'in range')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+	
+	<!-- M-Mode -->
+	<action code="=($logmsg, 'M-Mode')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0057 -->
+	<action code="=($logmsg, 'TST-28-0057:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="PauseScan()"/>
+	<!-- action code="InitializeTransducerSim('MS-700', 'General Imaging')"/ -->	<!-- with simulator -->
+	<action code="InitializeTransducer('MS-700', 'General Imaging')"/>	<!-- on system -->
+	<sleep time="10000"/>
+	<action code="StartScan('MMode')"/>
+
+	<action code="PauseScan()"/>
+	<!-- action code="InitializeTransducerSim('MS-700', 'Cardiology')"/ -->	<!-- with simulator -->
+	<action code="InitializeTransducer('MS-700', 'Cardiology')"/>	<!-- on system -->
+	<sleep time="10000"/>
+	<action code="StartScan('MMode')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0058 -->
+	<action code="=($logmsg, 'TST-28-0058:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="ScanRestart3('Frequency', 'M-Mode', 48000000, 32000000)"/>
+	<action code="Boundary('Acq/B-Mode/Tx/Frequency', 'TxFrequencyUp')"/>
+	<action code="ScanRestart3('Frequency', 'M-Mode', 40000000, 32000000)"/>
+	<action code="Boundary('Acq/B-Mode/Tx/Frequency', 'TxFrequencyDown')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0059 -->
+	<action code="=($logmsg, 'TST-28-0059:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="DepthOffset('M-Mode', 1)"/>
+	<action code="ImageDepth('M-Mode', 10, 'in range')"/>
+	<action code="GateM('M-Mode', 8.8)"/>
+	<action code="=($same, ScanRestart3('FocalZones', 'M-Mode', 'Single', 0))"/>
+	<action code="Default($same)"/>
+	<action code="Boundary('Acq/M-Mode/Scan/Focal-Zones-Count', 'FocalZonesUp')"/>
+	<action code="Boundary('Acq/M-Mode/Scan/Focal-Zones-Count', 'FocalZonesDown')"/>
+	<action code="ScanRestart4('FocusDepth', 'M-Mode', 1.5, -1, -1)"/>
+	<action code="Boundary('Acq/M-Mode/Scan/Focal-Zones-Pos1', 'FocusDepthUp')"/>
+	<action code="ScanRestart4('FocusDepth', 'M-Mode', 2.25, -1, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'M-Mode', 3.0, -1, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'M-Mode', 3.75, -1, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'M-Mode', 4.5, -1, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'M-Mode', 5.25, -1, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'M-Mode', 6.0, -1, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'M-Mode', 6.75, -1, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'M-Mode', 7.5, -1, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'M-Mode', 8.25, -1, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'M-Mode', 9.0, -1, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'M-Mode', 9.75, -1, -1)"/>
+	<action code="Boundary('Acq/M-Mode/Scan/Focal-Zones-Pos1', 'FocusDepthDown')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+				
+	<!-- TST-28-0060 -->
+	<action code="=($logmsg, 'TST-28-0060:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="DepthOffset('M-Mode', 1)"/>
+	<action code="ImageDepth('M-Mode', 10, 'in range')"/>
+	<action code="ScanRestart2('GateM', 'M-Mode', 8.8)"/>
+	<action code="Boundary('Acq/M-Mode/Scan/Height', 'SvSizeUp')"/>
+	<action code="ScanRestart2('GateM', 'M-Mode', 0.5)"/>
+	<action code="Boundary('Acq/M-Mode/Scan/Height', 'SvSizeDown')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+	
+	<!-- TST-28-0061 -->
+	<action code="=($logmsg, 'TST-28-0061:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="DepthOffset('M-Mode', 1)"/>
+	<action code="ScanRestart3('ImageDepth', 'M-Mode', 3, 'out of range')"/>
+	<action code="ScanRestart3('ImageDepth', 'M-Mode', 4, 'in range')"/>
+	<action code="ScanRestart3('ImageDepth', 'M-Mode', 5, 'in range')"/>
+	<action code="ScanRestart3('ImageDepth', 'M-Mode', 6, 'in range')"/>
+	<action code="ScanRestart3('ImageDepth', 'M-Mode', 7, 'in range')"/>
+	<action code="ScanRestart3('ImageDepth', 'M-Mode', 8, 'in range')"/>
+	<action code="ScanRestart3('ImageDepth', 'M-Mode', 9, 'in range')"/>
+	<action code="ScanRestart3('ImageDepth', 'M-Mode', 10, 'in range')"/>
+	<action code="ScanRestart3('ImageDepth', 'M-Mode', 11, 'out of range')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0062 -->
+	<action code="=($logmsg, 'TST-28-0062:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="ScanRestart2('TxPower', 'M-Mode', 1)"/>
+	<action code="Boundary('Acq/B-Mode/Tx/Power', 'TxPowerDown')"/>
+	<action code="ScanRestart2('TxPower', 'M-Mode', 2)"/>
+	<action code="ScanRestart2('TxPower', 'M-Mode', 3)"/>
+	<action code="ScanRestart2('TxPower', 'M-Mode', 4)"/>
+	<action code="ScanRestart2('TxPower', 'M-Mode', 5)"/>
+	<action code="ScanRestart2('TxPower', 'M-Mode', 6)"/>
+	<action code="ScanRestart2('TxPower', 'M-Mode', 7)"/>
+	<action code="ScanRestart2('TxPower', 'M-Mode', 8)"/>
+	<action code="ScanRestart2('TxPower', 'M-Mode', 9)"/>
+	<action code="ScanRestart2('TxPower', 'M-Mode', 10)"/>
+	<action code="ScanRestart2('TxPower', 'M-Mode', 20)"/>
+	<action code="ScanRestart2('TxPower', 'M-Mode', 30)"/>
+	<action code="ScanRestart2('TxPower', 'M-Mode', 40)"/>
+	<action code="ScanRestart2('TxPower', 'M-Mode', 50)"/>
+	<action code="ScanRestart2('TxPower', 'M-Mode', 60)"/>
+	<action code="ScanRestart2('TxPower', 'M-Mode', 70)"/>
+	<action code="ScanRestart2('TxPower', 'M-Mode', 80)"/>
+	<action code="ScanRestart2('TxPower', 'M-Mode', 90)"/>
+	<action code="ScanRestart2('TxPower', 'M-Mode', 100)"/>
+	<action code="Boundary('Acq/B-Mode/Tx/Power', 'TxPowerUp')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0063 -->
+	<action code="=($logmsg, 'TST-28-0063:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="Gain2D('M-Mode', 0, 70, 1, 'yes', 'yes')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- AM-Mode -->
+	<action code="=($logmsg, 'AM-Mode')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0064 -->
+	<action code="=($logmsg, 'TST-28-0064:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="PauseScan()"/>
+	<!-- action code="InitializeTransducerSim('MS-700', 'General Imaging')"/ -->	<!-- with simulator -->
+	<action code="InitializeTransducer('MS-700', 'General Imaging')"/>	<!-- on system -->
+	<sleep time="10000"/>
+	<action code="StartScan('AMMode')"/>
+
+	<action code="PauseScan()"/>
+	<!-- action code="InitializeTransducerSim('MS-700', 'Cardiology')"/ -->	<!-- with simulator -->
+	<action code="InitializeTransducer('MS-700', 'Cardiology')"/>	<!-- on system -->
+	<sleep time="10000"/>
+	<action code="StartScan('AMMode')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0065 -->
+	<action code="=($logmsg, 'TST-28-0065:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="ScanRestart3('Frequency', 'M-Mode', 50000000, 43750000)"/>
+	<action code="Boundary('Acq/B-Mode/Tx/Frequency', 'TxFrequencyUp')"/>
+	<action code="ScanRestart3('Frequency', 'M-Mode', 40000000, 35000000)"/>
+	<action code="Boundary('Acq/B-Mode/Tx/Frequency', 'TxFrequencyDown')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0066 -->
+	<action code="=($logmsg, 'TST-28-0066:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="DepthOffset('AM-Mode', 1)"/>
+	<action code="ImageDepth('AM-Mode', 10, 'in range')"/>
+	<action code="GateM('AM-Mode', 0.5)"/>
+	<action code="=($same, ScanRestart3('FocalZones', 'M-Mode', 'Single', 0))"/>
+	<action code="Default($same)"/>
+	<action code="Boundary('Acq/M-Mode/Scan/Focal-Zones-Count', 'FocalZonesUp')"/>
+	<action code="Boundary('Acq/M-Mode/Scan/Focal-Zones-Count', 'FocalZonesDown')"/>
+	<action code="ScanRestart4('FocusDepth', 'M-Mode', 1.5, -1, -1)"/>
+	<action code="Boundary('Acq/M-Mode/Scan/Focal-Zones-Pos1', 'FocusDepthUp')"/>
+	<action code="ScanRestart4('FocusDepth', 'M-Mode', 2.25, -1, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'M-Mode', 3.0, -1, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'M-Mode', 3.75, -1, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'M-Mode', 4.5, -1, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'M-Mode', 5.25, -1, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'M-Mode', 6.0, -1, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'M-Mode', 6.75, -1, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'M-Mode', 7.5, -1, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'M-Mode', 8.25, -1, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'M-Mode', 9.0, -1, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'M-Mode', 9.75, -1, -1)"/>
+	<action code="Boundary('Acq/M-Mode/Scan/Focal-Zones-Pos1', 'FocusDepthDown')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0067 -->
+	<action code="=($logmsg, 'TST-28-0067:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="DepthOffset('AM-Mode', 1)"/>
+	<action code="ImageDepth('AM-Mode', 10, 'in range')"/>
+	<action code="ScanRestart2('GateM', 'M-Mode', 0.5)"/>
+	<action code="Boundary('Acq/M-Mode/Scan/Height', 'SvSizeDown')"/>
+	<action code="ScanRestart2('GateM', 'M-Mode', 8.8)"/>
+	<action code="Boundary('Acq/M-Mode/Scan/Height', 'SvSizeUp')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0068 -->
+	<action code="=($logmsg, 'TST-28-0068:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="DepthOffset('AM-Mode', 1)"/>
+	<action code="ScanRestart3('ImageDepth', 'M-Mode', 3, 'out of range')"/>
+	<action code="ScanRestart3('ImageDepth', 'M-Mode', 4, 'in range')"/>
+	<action code="ScanRestart3('ImageDepth', 'M-Mode', 5, 'in range')"/>
+	<action code="ScanRestart3('ImageDepth', 'M-Mode', 6, 'in range')"/>
+	<action code="ScanRestart3('ImageDepth', 'M-Mode', 7, 'in range')"/>
+	<action code="ScanRestart3('ImageDepth', 'M-Mode', 8, 'in range')"/>
+	<action code="ScanRestart3('ImageDepth', 'M-Mode', 9, 'in range')"/>
+	<action code="ScanRestart3('ImageDepth', 'M-Mode', 10, 'in range')"/>
+	<action code="ScanRestart3('ImageDepth', 'M-Mode', 11, 'out of range')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0069 -->
+	<action code="=($logmsg, 'TST-28-0069:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="ScanRestart2('TxPower', 'M-Mode', 1)"/>
+	<action code="Boundary('Acq/B-Mode/Tx/Power', 'TxPowerDown')"/>
+	<action code="ScanRestart2('TxPower', 'M-Mode', 2)"/>
+	<action code="ScanRestart2('TxPower', 'M-Mode', 3)"/>
+	<action code="ScanRestart2('TxPower', 'M-Mode', 4)"/>
+	<action code="ScanRestart2('TxPower', 'M-Mode', 5)"/>
+	<action code="ScanRestart2('TxPower', 'M-Mode', 6)"/>
+	<action code="ScanRestart2('TxPower', 'M-Mode', 7)"/>
+	<action code="ScanRestart2('TxPower', 'M-Mode', 8)"/>
+	<action code="ScanRestart2('TxPower', 'M-Mode', 9)"/>
+	<action code="ScanRestart2('TxPower', 'M-Mode', 10)"/>
+	<action code="ScanRestart2('TxPower', 'M-Mode', 20)"/>
+	<action code="ScanRestart2('TxPower', 'M-Mode', 30)"/>
+	<action code="ScanRestart2('TxPower', 'M-Mode', 40)"/>
+	<action code="ScanRestart2('TxPower', 'M-Mode', 50)"/>
+	<action code="ScanRestart2('TxPower', 'M-Mode', 60)"/>
+	<action code="ScanRestart2('TxPower', 'M-Mode', 70)"/>
+	<action code="ScanRestart2('TxPower', 'M-Mode', 80)"/>
+	<action code="ScanRestart2('TxPower', 'M-Mode', 90)"/>
+	<action code="ScanRestart2('TxPower', 'M-Mode', 100)"/>
+	<action code="Boundary('Acq/B-Mode/Tx/Power', 'TxPowerUp')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0070 -->
+	<action code="=($logmsg, 'TST-28-0070:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="Gain2D('M-Mode', 0, 70, 1, 'yes', 'yes')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+	
+	<!-- TST-28-0071 -->
+	<action code="=($logmsg, 'TST-28-0071:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<cmd code="Back"/>
+	<sleep time="3000"/>
+	<action code="ScanRestart3('AMAngle', 'M-Mode', 0, 'in range')"/>
+	<action code="MAM('MMode')"/>
+	<action code="ScanRestart3('AMAngle', 'M-Mode', 5, 'in range')"/>
+	<action code="MAM('AMMode')"/>
+	<action code="ScanRestart3('AMAngle', 'M-Mode', 10, 'in range')"/>
+	<action code="MAM('AMMode')"/>
+	<action code="ScanRestart3('AMAngle', 'M-Mode', 15, 'in range')"/>
+	<action code="MAM('AMMode')"/>
+	<action code="ScanRestart3('AMAngle', 'M-Mode', 15, 'in range')"/>
+	<action code="MAM('AMMode')"/>
+	<action code="ScanRestart3('AMAngle', 'M-Mode', 25, 'in range')"/>
+	<action code="MAM('AMMode')"/>
+	<action code="ScanRestart3('AMAngle', 'M-Mode', 30, 'in range')"/>
+	<action code="MAM('AMMode')"/>
+	<action code="ScanRestart3('AMAngle', 'M-Mode', 35, 'in range')"/>
+	<action code="MAM('AMMode')"/>
+	<action code="ScanRestart3('AMAngle', 'M-Mode', 40, 'in range')"/>
+	<action code="MAM('AMMode')"/>
+	<action code="ScanRestart3('AMAngle', 'M-Mode', 45, 'in range')"/>
+	<action code="MAM('AMMode')"/>
+	<action code="ScanRestart3('AMAngle', 'M-Mode', 50, 'in range')"/>
+	<action code="MAM('AMMode')"/>
+	<action code="ScanRestart3('AMAngle', 'M-Mode', 55, 'in range')"/>
+	<action code="MAM('AMMode')"/>
+	<action code="ScanRestart3('AMAngle', 'M-Mode', 60, 'in range')"/>
+	<action code="MAM('AMMode')"/>
+	<action code="ScanRestart3('AMAngle', 'M-Mode', 65, 'in range')"/>
+	<action code="MAM('AMMode')"/>
+	<action code="ScanRestart3('AMAngle', 'M-Mode', 70, 'in range')"/>
+	<action code="MAM('AMMode')"/>
+	<action code="ScanRestart3('AMAngle', 'M-Mode', 75, 'in range')"/>
+	<action code="MAM('AMMode')"/>
+	<action code="ScanRestart3('AMAngle', 'M-Mode', 80, 'in range')"/>
+	<action code="MAM('AMMode')"/>
+	<action code="ScanRestart3('AMAngle', 'M-Mode', 85, 'in range')"/>
+	<action code="MAM('AMMode')"/>
+	<action code="ScanRestart3('AMAngle', 'M-Mode', 90, 'in range')"/>
+	<action code="MAM('AMMode')"/>
+	<action code="ScanRestart3('AMAngle', 'M-Mode', 95, 'in range')"/>
+	<action code="MAM('AMMode')"/>
+	<action code="ScanRestart3('AMAngle', 'M-Mode', 100, 'in range')"/>
+	<action code="MAM('AMMode')"/>
+	<action code="ScanRestart3('AMAngle', 'M-Mode', 105, 'in range')"/>
+	<action code="MAM('AMMode')"/>
+	<action code="ScanRestart3('AMAngle', 'M-Mode', 110, 'in range')"/>
+	<action code="MAM('AMMode')"/>
+	<action code="ScanRestart3('AMAngle', 'M-Mode', 115, 'in range')"/>
+	<action code="MAM('AMMode')"/>
+	<action code="ScanRestart3('AMAngle', 'M-Mode', 115, 'in range')"/>
+	<action code="MAM('AMMode')"/>
+	<action code="ScanRestart3('AMAngle', 'M-Mode', 125, 'in range')"/>
+	<action code="MAM('AMMode')"/>
+	<action code="ScanRestart3('AMAngle', 'M-Mode', 130, 'in range')"/>
+	<action code="MAM('AMMode')"/>
+	<action code="ScanRestart3('AMAngle', 'M-Mode', 135, 'in range')"/>
+	<action code="MAM('AMMode')"/>
+	<action code="ScanRestart3('AMAngle', 'M-Mode', 140, 'in range')"/>
+	<action code="MAM('AMMode')"/>
+	<action code="ScanRestart3('AMAngle', 'M-Mode', 145, 'in range')"/>
+	<action code="MAM('AMMode')"/>
+	<action code="ScanRestart3('AMAngle', 'M-Mode', 150, 'in range')"/>
+	<action code="MAM('AMMode')"/>
+	<action code="ScanRestart3('AMAngle', 'M-Mode', 155, 'in range')"/>
+	<action code="MAM('AMMode')"/>
+	<action code="ScanRestart3('AMAngle', 'M-Mode', 160, 'in range')"/>
+	<action code="MAM('AMMode')"/>
+	<action code="ScanRestart3('AMAngle', 'M-Mode', 165, 'in range')"/>
+	<action code="MAM('AMMode')"/>
+	<action code="ScanRestart3('AMAngle', 'M-Mode', 170, 'in range')"/>
+	<action code="MAM('AMMode')"/>
+	<action code="ScanRestart3('AMAngle', 'M-Mode', 175, 'in range')"/>
+	<action code="MAM('AMMode')"/>
+	<action code="ScanRestart3('AMAngle', 'M-Mode', 180, 'out of range')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+	
+	<!-- Linear Contrast Mode -->
+	<action code="=($logmsg, 'Linear Contrast Mode')"/>
+	<log level="warning">script:$logmsg</log>
+	
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- ST-30-0072 & TST-28-0073 -->
+	<action code="=($logmsg, 'TST-28-0072 and TST-28-0073:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="PauseScan()"/>
+	<!-- action code="InitializeTransducerSim('MS-700', 'General Imaging')"/ -->	<!-- with simulator -->
+	<action code="InitializeTransducer('MS-700', 'General Imaging')"/>	<!-- on system -->
+	<sleep time="10000"/>
+	<action code="CineLoopSize('Contrast-Mode')"/>
+	<action code="Contrast('LC')"/>
+	<action code="StartScan('LCMode')"/>
+	<action code="=($same, ScanRestart3('Frequency', 'Contrast-Mode', 50000000, 43750000))"/>
+	<action code="Default($same)"/>
+	<action code="ScanRestart3('Frequency', 'Contrast-Mode', 40000000, 35000000)"/>
+	<action code="Boundary('Acq/B-Mode/Tx/Frequency', 'TxFrequencyDown')"/>
+	<sleep time="1000"/>
+	<action code="ScanRestart3('Frequency', 'Contrast-Mode', 50000000, 43750000)"/>
+	<action code="Boundary('Acq/B-Mode/Tx/Frequency', 'TxFrequencyUp')"/>
+
+	<action code="PauseScan()"/>
+	<!-- action code="InitializeTransducerSim('MS-700', 'Cardiology')"/ -->	<!-- with simulator -->
+	<action code="InitializeTransducer('MS-700', 'Cardiology')"/>	<!-- on system -->
+	<sleep time="10000"/>
+	<action code="CineLoopSize('Contrast-Mode')"/>
+	<action code="Contrast('LC')"/>
+	<action code="StartScan('LCMode')"/>
+	<action code="=($same, ScanRestart3('Frequency', 'Contrast-Mode', 50000000, 43750000))"/>
+	<action code="Default($same)"/>
+	<action code="ScanRestart3('Frequency', 'Contrast-Mode', 40000000, 35000000)"/>
+	<action code="Boundary('Acq/B-Mode/Tx/Frequency', 'TxFrequencyDown')"/>
+	<sleep time="1000"/>
+	<action code="ScanRestart3('Frequency', 'Contrast-Mode', 50000000, 43750000)"/>
+	<action code="Boundary('Acq/B-Mode/Tx/Frequency', 'TxFrequencyUp')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0075  & TST-28-0076 -->
+	<action code="=($logmsg, 'TST-28-0075 and TST-28-0076:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="DepthOffset('Contrast-Mode', 1)"/>
+	<action code="ImageDepth('Contrast-Mode', 10, 'in range')"/>
+	<action code="ScanRestart3('FocalZones', 'Contrast-Mode', 'Single', 0)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 1.5, -1, -1)"/>
+	<action code="Boundary('Acq/B-Mode/Scan/Focal-Zones-Pos1', 'FocusDepthUp')"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 2.25, -1, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 3.0, -1, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 3.75, -1, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 4.5, -1, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 5.25, -1, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 6.0, -1, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 6.75, -1, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 7.5, -1, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 8.25, -1, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 9.0, -1, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 9.75, -1, -1)"/>
+	<action code="Boundary('Acq/B-Mode/Scan/Focal-Zones-Pos1', 'FocusDepthDown')"/>
+	<cmd code="FocalZonesDown"/>
+	<action code="FocalZonesToggle('Contrast-Mode', 'Triple', 1.5)"/>
+	<action code="ScanRestart3('FocalZones', 'Contrast-Mode', 'Tight Dual', 0.75)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 1.5, 2.25, -1)"/>
+	<action code="Boundary('Acq/B-Mode/Scan/Focal-Zones-Pos1', 'FocusDepthUp')"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 2.25, 3.0, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 3.0, 3.75, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 3.75, 4.5, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 4.5, 5.25, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 5.25, 6.0, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 6.0, 6.75, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 6.75, 7.5, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 7.5, 8.25, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 8.25, 9.0, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 9.0, 9.75, -1)"/>
+	<action code="Boundary('Acq/B-Mode/Scan/Focal-Zones-Pos1', 'FocusDepthDown')"/>
+	<action code="ScanRestart3('FocalZones', 'Contrast-Mode', 'Dual', 1.5)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 1.5, 3.0, -1)"/>
+	<action code="Boundary('Acq/B-Mode/Scan/Focal-Zones-Pos1', 'FocusDepthUp')"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 2.25, 3.75, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 3.0, 4.5, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 3.75, 5.25, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 4.5, 6.0, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 5.25, 6.75, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 6.0, 7.5, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 6.75, 8.25, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 7.5, 9.0, -1)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 8.25, 9.75, -1)"/>
+	<action code="Boundary('Acq/B-Mode/Scan/Focal-Zones-Pos1', 'FocusDepthDown')"/>
+	<action code="ScanRestart3('FocalZones', 'Contrast-Mode', 'Tight Triple', 0.75)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 1.5, 2.25, 3.0)"/>
+	<action code="Boundary('Acq/B-Mode/Scan/Focal-Zones-Pos1', 'FocusDepthUp')"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 2.25, 3.0, 3.75)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 3.0, 3.75, 4.5)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 3.75, 4.5, 5.25)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 4.5, 5.25, 6.0)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 5.25, 6.0, 6.75)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 6.0, 6.75, 7.5)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 6.75, 7.5, 8.25)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 7.5, 8.25, 9.0)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 8.25, 9.0, 9.75)"/>
+	<action code="Boundary('Acq/B-Mode/Scan/Focal-Zones-Pos1', 'FocusDepthDown')"/>
+	<action code="ScanRestart3('FocalZones', 'Contrast-Mode', 'Triple', 1.5)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 1.5, 3.0, 4.5)"/>
+	<action code="Boundary('Acq/B-Mode/Scan/Focal-Zones-Pos1', 'FocusDepthUp')"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 2.25, 3.75, 5.25)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 3.0, 4.5, 6.0)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 3.75, 5.25, 6.75)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 4.5, 6.0, 7.5)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 5.25, 6.75, 8.25)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 6.0, 7.5, 9.0)"/>
+	<action code="ScanRestart4('FocusDepth', 'Contrast-Mode', 6.75, 8.25, 9.75)"/>
+	<action code="Boundary('Acq/B-Mode/Scan/Focal-Zones-Pos1', 'FocusDepthDown')"/>
+	<cmd code="FocalZonesUp"/>
+	<action code="FocalZonesToggle('Contrast-Mode', 'Single', 0)"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0078 -->
+	<action code="=($logmsg, 'TST-28-0078:')"/>
+	<log level="warning">script:$logmsg</log>
+
+        <sleep time="1000"/>
+	<action code="PauseScan()"/>
+	<!-- action code="InitializeTransducerSim('MS-700', 'General Imaging')"/ -->	<!-- with simulator -->
+	<action code="InitializeTransducer('MS-700', 'General Imaging')"/>	<!-- on system -->
+	<sleep time="10000"/>
+	<action code="CineLoopSize('Contrast-Mode')"/>
+	<action code="Contrast('LC')"/>
+	<action code="StartScan('LCMode')"/>
+	<action code="DisplayMapCheck('Contrast-Mode', 'MB1')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0077 -->
+	<action code="=($logmsg, 'TST-28-0077:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="PauseScan()"/>
+	<!-- action code="InitializeTransducerSim('MS-700', 'Cardiology')"/ -->	<!-- with simulator -->
+	<action code="InitializeTransducer('MS-700', 'Cardiology')"/>	<!-- on system -->
+	<sleep time="10000"/>
+	<action code="CineLoopSize('Contrast-Mode')"/>
+	<action code="Contrast('LC')"/>
+	<action code="StartScan('LCMode')"/>
+	<action code="DisplayMapCheck('Contrast-Mode', 'MB1')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0079 -->
+	<action code="=($logmsg, 'TST-28-0079:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="DepthOffset('Contrast-Mode', 1)"/>
+	<action code="FrameRateTableLC(40000000, 35000000, 2.25, 4.0, 2.73, 'Standard', 1000.0)"/>
+	<action code="FrameRateTableLC(40000000, 35000000, 9.75, 10.0, 9.73, 'High', 100.0)"/>
+	<action code="FrameRateTableLC(40000000, 35000000, 5.25, 10.0, 9.73, 'Standard', 273.0)"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0080 -->
+	<action code="=($logmsg, 'TST-28-0080:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="DepthOffset('Contrast-Mode', 3)"/>
+	<action code="ImageDepth('Contrast-Mode', 5, 'in range')"/>
+	<action code="ImageWidth('Contrast-Mode', 2.73)"/>
+	<action code="LineDensity2('Contrast-Mode', 'Standard')"/>
+	<action code="ScanRestart2('FrameRateSetting6', 'Contrast-Mode', 'Min')"/>
+	<action code="=($FrameRate[0], FrameRate('Contrast-Mode'))"/>
+	<action code="FrameRateFast($FrameRate[0], 5, 'not max')"/>
+	<action code="Boundary('Acq/Contrast-Mode/Scan/Frame-Rate', 'FrameRateDown')"/>
+	<action code="ScanRestart2('FrameRateSetting6', 'Contrast-Mode', 'Low')"/>
+	<action code="=($FrameRate[1], FrameRate('Contrast-Mode'))"/>
+	<action code="FrameRateFast($FrameRate[1], 10, 'not max')"/>
+	<action code="ScanRestart2('FrameRateSetting6', 'Contrast-Mode', 'Medium-Low')"/>
+	<action code="=($FrameRate[2], FrameRate('Contrast-Mode'))"/>
+	<action code="FrameRateFast($FrameRate[2], 25, 'not max')"/>
+	<action code="ScanRestart2('FrameRateSetting6', 'Contrast-Mode', 'Medium')"/>
+	<action code="=($FrameRate[3], FrameRate('Contrast-Mode'))"/>
+	<action code="FrameRateFast($FrameRate[3], 50, 'not max')"/>
+	<action code="ScanRestart2('FrameRateSetting6', 'Contrast-Mode', 'High')"/>
+	<action code="=($FrameRate[4], FrameRate('Contrast-Mode'))"/>
+	<action code="FrameRateFast($FrameRate[4], 100, 'not max')"/>
+	<action code="ScanRestart2('FrameRateSetting6', 'Contrast-Mode', 'Max')"/>
+	<action code="=($FrameRate[5], FrameRate('Contrast-Mode'))"/>
+	<action code="FrameRateFast($FrameRate[5], 100, 'max')"/>
+	<action code="Boundary('Acq/Contrast-Mode/Scan/Frame-Rate', 'FrameRateUp')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0081  -->
+	<action code="=($logmsg, 'TST-28-0081:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="DepthOffset('Contrast-Mode', 1)"/>
+	<action code="ImageDepth('Contrast-Mode', 10, 'in range')"/>
+	<action code="ImageWidth('Contrast-Mode', 9.73)"/>
+	<action code="LineDensity2('Contrast-Mode', 'High')"/>
+	<action code="FocalZones('Contrast-Mode', 'Triple', 1.5)"/>
+	<action code="ScanRestart2('FrameRateSetting6', 'Contrast-Mode', 'Max')"/>
+	<action code="=($FrameRate[5], FrameRate('Contrast-Mode'))"/>
+	<action code="FrameRateSlow($FrameRate[5], 100, $FrameRate[5], 'max')"/>
+	<action code="ScanRestart2('FrameRateSetting6', 'Contrast-Mode', 'High')"/>
+	<action code="=($FrameRate[4], FrameRate('Contrast-Mode'))"/>
+	<action code="FrameRateSlow($FrameRate[4], 100, $FrameRate[5], 'not max')"/>
+	<action code="ScanRestart2('FrameRateSetting6', 'Contrast-Mode', 'Medium')"/>
+	<action code="=($FrameRate[3], FrameRate('Contrast-Mode'))"/>
+	<action code="FrameRateSlow($FrameRate[3], 50, $FrameRate[5], 'not max')"/>
+	<action code="ScanRestart2('FrameRateSetting6', 'Contrast-Mode', 'Medium-Low')"/>
+	<action code="=($FrameRate[2], FrameRate('Contrast-Mode'))"/>
+	<action code="FrameRateSlow($FrameRate[2], 25, $FrameRate[5], 'not max')"/>
+	<action code="ScanRestart2('FrameRateSetting6', 'Contrast-Mode', 'Low')"/>
+	<action code="=($FrameRate[1], FrameRate('Contrast-Mode'))"/>
+	<action code="FrameRateSlow($FrameRate[1], 10, $FrameRate[5], 'not max')"/>
+	<action code="ScanRestart2('FrameRateSetting6', 'Contrast-Mode', 'Min')"/>
+	<action code="=($FrameRate[0], FrameRate('Contrast-Mode'))"/>
+	<action code="FrameRateSlow($FrameRate[0], 5, $FrameRate[5], 'not max')"/>
+	<action code="FrameRateSetting6('Contrast-Mode', 'Max')"/>	<!-- set back to original value -->
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0082 -->
+	<action code="=($logmsg, 'TST-28-0082:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="ScanRestart2('LineDensity2', 'Contrast-Mode', 'High')"/>
+	<action code="Boundary('Acq/B-Mode/Scan/Line-Density', 'LineDensityUp')"/>
+	<action code="ScanRestart2('LineDensity2', 'Contrast-Mode', 'Standard')"/>
+	<action code="Boundary('Acq/B-Mode/Scan/Line-Density', 'LineDensityDown')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- Power Doppler Mode -->
+	<action code="=($logmsg, 'Power Doppler Mode')"/>
+	<log level="warning">script:$logmsg</log>
+	
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0083 -->
+	<action code="=($logmsg, 'TST-28-0083:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<!-- action code="InitializeTransducerSim('MS-700', 'Cardiology')"/ -->	<!-- with simulator -->
+	<action code="InitializeTransducer('MS-700', 'Cardiology')"/>	<!-- on system -->
+	<sleep time="10000"/>
+	<action code="StartScan('PowerMode')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0084 -->
+	<action code="=($logmsg, 'TST-28-0084:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="BoxSize('min')"/>
+	<action code="BoxSizeCheck('Power-Mode', 1.8, 1.8)"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0085 -->
+	<action code="=($logmsg, 'TST-28-0085:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="PauseScan()"/>
+	<!-- action code="InitializeTransducerSim('MS-700', 'General Imaging')"/ -->	<!-- with simulator -->
+	<action code="InitializeTransducer('MS-700', 'General Imaging')"/>	<!-- on system -->
+	<sleep time="10000"/>
+	<action code="StartScan('PowerMode')"/>
+	<action code="ScanRestart2('Sensitivity', 'Power-Mode', 1)"/>
+	<action code="Boundary('Acq/Power-Mode/ColorSoft/Sensitivity', 'SensitivityDown')"/>
+	<action code="ScanRestart2('Sensitivity', 'Power-Mode', 2)"/>
+	<action code="ScanRestart2('Sensitivity', 'Power-Mode', 3)"/>
+	<action code="ScanRestart2('Sensitivity', 'Power-Mode', 4)"/>
+	<action code="ScanRestart2('Sensitivity', 'Power-Mode', 5)"/>
+	<action code="Boundary('Acq/Power-Mode/ColorSoft/Sensitivity', 'SensitivityUp')"/>
+
+	<action code="PauseScan()"/>
+	<!-- action code="InitializeTransducerSim('MS-700', 'Cardiology')"/ -->	<!-- with simulator -->
+	<action code="InitializeTransducer('MS-700', 'Cardiology')"/>	<!-- on system -->
+	<sleep time="10000"/>
+	<action code="StartScan('PowerMode')"/>
+	<action code="ScanRestart2('Sensitivity', 'Power-Mode', 1)"/>
+	<action code="Boundary('Acq/Power-Mode/ColorSoft/Sensitivity', 'SensitivityDown')"/>
+	<action code="ScanRestart2('Sensitivity', 'Power-Mode', 2)"/>
+	<action code="ScanRestart2('Sensitivity', 'Power-Mode', 3)"/>
+	<action code="ScanRestart2('Sensitivity', 'Power-Mode', 4)"/>
+	<action code="ScanRestart2('Sensitivity', 'Power-Mode', 5)"/>
+	<action code="ScanRestart2('Sensitivity', 'Power-Mode', 6)"/>
+	<action code="Boundary('Acq/Power-Mode/ColorSoft/Sensitivity', 'SensitivityUp')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0086 -->
+	<action code="=($logmsg, 'TST-28-0086:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="PauseScan()"/>
+	<!-- action code="InitializeTransducerSim('MS-700', 'Cardiology')"/ -->	<!-- with simulator -->
+	<action code="InitializeTransducer('MS-700', 'Cardiology')"/>	<!-- on system -->
+	<sleep time="10000"/>
+	<action code="StartScan('PowerMode')"/>
+	<action code="DepthOffset('Power-Mode', 1)"/>
+	<action code="FrameRateTableDoppler('Power-Mode', 10000, 40000000, 40000000, 3, 10, 8.25, 2.73, 1.88, 'Full', 75.0)"/>
+	<action code="FrameRateTableDoppler('Power-Mode', 20000, 40000000, 40000000, 4, 10, 9.75, 9.73, 5.65, 'Full', 12.0)"/>
+	<action code="FrameRateTableDoppler('Power-Mode', 35000, 40000000, 40000000, 5, 10, 6.0, 6.73, 6.53, 'Full', 15.0)"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0087 -->
+	<action code="=($logmsg, 'TST-28-0087:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="ScanRestart2('LineDensity5', 'Power-Mode', 'High')"/>
+	<action code="Boundary('Acq/Power-Mode/Scan/Line-Density', 'LineDensityUp')"/>
+	<action code="ScanRestart2('LineDensity5', 'Power-Mode', 'Full')"/>
+	<action code="ScanRestart2('LineDensity5', 'Power-Mode', 'Half')"/>
+	<action code="ScanRestart2('LineDensity5', 'Power-Mode', 'Third')"/>
+	<action code="ScanRestart2('LineDensity5', 'Power-Mode', 'Quarter')"/>
+	<action code="Boundary('Acq/Power-Mode/Scan/Line-Density', 'LineDensityDown')"/>
+	<action code="ScanRestart2('LineDensity5', 'Power-Mode', 'Full')"/>		<!-- set back to original value -->
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0088 -->
+	<action code="=($logmsg, 'TST-28-0088:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="ScanRestart2('ImageWidth', 'Power-Mode', 2.73)"/>
+	<action code="Boundary('Acq/B-Mode/Display/Width', 'WidthDown')"/>
+	<action code="ScanRestart2('ImageWidth', 'Power-Mode', 3.73)"/>
+	<action code="ScanRestart2('ImageWidth', 'Power-Mode', 4.73)"/>
+	<action code="ScanRestart2('ImageWidth', 'Power-Mode', 5.73)"/>
+	<action code="ScanRestart2('ImageWidth', 'Power-Mode', 6.73)"/>
+	<action code="ScanRestart2('ImageWidth', 'Power-Mode', 7.73)"/>
+	<action code="ScanRestart2('ImageWidth', 'Power-Mode', 8.73)"/>
+	<action code="ScanRestart2('ImageWidth', 'Power-Mode', 9.73)"/>
+	<action code="Boundary('Acq/B-Mode/Display/Width', 'WidthUp')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0089 -->
+	<action code="=($logmsg, 'TST-28-0089:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="DepthOffset('Power-Mode', 1)"/>
+	<action code="ScanRestart3('ImageDepth', 'Power-Mode', 3, 'out of range')"/>
+	<action code="ScanRestart3('ImageDepth', 'Power-Mode', 4, 'in range')"/>
+	<action code="ScanRestart3('ImageDepth', 'Power-Mode', 5, 'in range')"/>
+	<action code="ScanRestart3('ImageDepth', 'Power-Mode', 6, 'in range')"/>
+	<action code="ScanRestart3('ImageDepth', 'Power-Mode', 7, 'in range')"/>
+	<action code="ScanRestart3('ImageDepth', 'Power-Mode', 8, 'in range')"/>
+	<action code="ScanRestart3('ImageDepth', 'Power-Mode', 9, 'in range')"/>
+	<action code="ScanRestart3('ImageDepth', 'Power-Mode', 10, 'in range')"/>
+	<action code="ScanRestart3('ImageDepth', 'Power-Mode', 11, 'out of range')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0090 -->
+	<action code="=($logmsg, 'TST-28-0090:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="DepthOffset('Power-Mode', 1)"/>
+	<action code="ImageDepth('Power-Mode', 10, 'in range')"/>
+	<action code="ScanRestart2('DepthOffset', 'Power-Mode', 1)"/>
+	<action code="Boundary('Acq/B-Mode/Display/Delay', 'DepthOffsetUp')"/>
+	<action code="ScanRestart2('DepthOffset', 'Power-Mode', 2)"/>
+	<action code="ScanRestart2('DepthOffset', 'Power-Mode', 3)"/>
+	<action code="ScanRestart2('DepthOffset', 'Power-Mode', 4)"/>
+	<action code="ScanRestart2('DepthOffset', 'Power-Mode', 5)"/>
+	<action code="ScanRestart2('DepthOffset', 'Power-Mode', 6)"/>
+	<action code="ScanRestart2('DepthOffset', 'Power-Mode', 7)"/>
+	<action code="ScanRestart2('DepthOffset', 'Power-Mode', 8)"/>
+	<action code="Boundary('Acq/B-Mode/Display/Delay', 'DepthOffsetDown')"/>
+	<action code="ScanRestart2('DepthOffset', 'Power-Mode', 1)"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0091 -->
+	<action code="=($logmsg, 'TST-28-0091:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="BoxSize('min')"/>
+	<action code="BoxPosition('top')"/>
+	<action code="ScanRestart2('PRF', 'Power-Mode', 1000)"/>
+	<action code="Boundary('Acq/Power-Mode/Tx/PRF-Display', 'VelocityDown')"/>
+	<action code="ScanRestart2('PRF', 'Power-Mode', 1500)"/>
+	<action code="ScanRestart2('PRF', 'Power-Mode', 2000)"/>
+	<action code="ScanRestart2('PRF', 'Power-Mode', 3000)"/>
+	<action code="ScanRestart2('PRF', 'Power-Mode', 4000)"/>
+	<action code="ScanRestart2('PRF', 'Power-Mode', 5000)"/>
+	<action code="ScanRestart2('PRF', 'Power-Mode', 6000)"/>
+	<action code="ScanRestart2('PRF', 'Power-Mode', 7000)"/>
+	<action code="ScanRestart2('PRF', 'Power-Mode', 8000)"/>
+	<action code="ScanRestart2('PRF', 'Power-Mode', 9000)"/>
+	<action code="ScanRestart2('PRF', 'Power-Mode', 10000)"/>
+	<action code="ScanRestart2('PRF', 'Power-Mode', 12500)"/>
+	<action code="ScanRestart2('PRF', 'Power-Mode', 15000)"/>
+	<action code="ScanRestart2('PRF', 'Power-Mode', 17500)"/>
+	<action code="ScanRestart2('PRF', 'Power-Mode', 20000)"/>
+	<action code="ScanRestart2('PRF', 'Power-Mode', 25000)"/>
+	<action code="ScanRestart2('PRF', 'Power-Mode', 30000)"/>
+	<action code="ScanRestart2('PRF', 'Power-Mode', 35000)"/>
+	<action code="ScanRestart2('PRF', 'Power-Mode', 40000)"/>
+	<action code="ScanRestart2('PRF', 'Power-Mode', 50000)"/>
+	<action code="Boundary('Acq/Power-Mode/Tx/PRF-Display', 'VelocityUp')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0092 -->
+	<action code="=($logmsg, 'TST-28-0092:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="ScanRestart3('Frequency', 'Power-Mode', 40000000, 40000000)"/>
+	<action code="Boundary('Acq/Power-Mode/Tx/Frequency', 'TxFrequencyUp')"/>
+	<action code="Boundary('Acq/Power-Mode/Tx/Frequency', 'TxFrequencyDown')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0093 -->
+	<action code="=($logmsg, 'TST-28-0093:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="PauseScan()"/>
+	<!-- action code="InitializeTransducerSim('MS-700', 'General Imaging')"/ -->	<!-- with simulator -->
+	<action code="InitializeTransducer('MS-700', 'General Imaging')"/>	<!-- on system -->
+	<sleep time="10000"/>
+	<action code="StartScan('PowerMode')"/>
+	<sleep time="1000"/>
+	<cmd code="TxFrequencyUp"/>
+	<sleep time="1000"/>
+	<action code="TxValues('Power-Mode', 'TXAE', 0)"/>
+	<action code="TxValues('Power-Mode', 'TXAH', 30)"/>
+	<action code="TxValues('Power-Mode', 'TXAM', 31)"/>
+	<action code="TxValues('Power-Mode', 'TXB', 15)"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0094 -->
+	<action code="=($logmsg, 'TST-28-0094:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="PauseScan()"/>
+	<!-- action code="InitializeTransducerSim('MS-700', 'Cardiology')"/ -->	<!-- with simulator -->
+	<action code="InitializeTransducer('MS-700', 'Cardiology')"/>	<!-- on system -->
+	<sleep time="10000"/>
+	<action code="StartScan('PowerMode')"/>
+	<sleep time="1000"/>
+	<cmd code="TxFrequencyUp"/>
+	<sleep time="1000"/>
+	<action code="TxValues('Power-Mode', 'TXAE', 0)"/>
+	<action code="TxValues('Power-Mode', 'TXAH', 30)"/>
+	<action code="TxValues('Power-Mode', 'TXAM', 31)"/>
+	<action code="TxValues('Power-Mode', 'TXB', 15)"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0095 -->
+	<action code="=($logmsg, 'TST-28-0095:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="TxCycles('Power-Mode', 1, 6, 'same')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0096 -->
+	<action code="=($logmsg, 'TST-28-0096:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="ScanRestart2('Gate', 'Power-Mode', 1)"/>
+	<action code="Boundary('Acq/Power-Mode/Tx/Cycles', 'SvSizeDown')"/>
+	<action code="ScanRestart2('Gate', 'Power-Mode', 2)"/>
+	<action code="ScanRestart2('Gate', 'Power-Mode', 3)"/>
+	<action code="ScanRestart2('Gate', 'Power-Mode', 4)"/>
+	<action code="ScanRestart2('Gate', 'Power-Mode', 5)"/>
+	<action code="ScanRestart2('Gate', 'Power-Mode', 6)"/>
+	<action code="Boundary('Acq/Power-Mode/Tx/Cycles', 'SvSizeUp')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0097 -->
+	<action code="=($logmsg, 'TST-28-0097:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="GainDoppler('Power-Mode', 0, 60, 1, 'yes', 'yes')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0098 -->
+	<action code="=($logmsg, 'TST-28-0098:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="Gate('Power-Mode', 1)"/>	<!-- use smallest Gate to reach lower TxPower -->
+	<action code="=($same, ScanRestart2('TxPower', 'Power-Mode', 1))"/>
+	<action code="VoltageDoppler('Power-Mode', $same, 0.038, 20.0, 11.2, 22.7)"/>
+	<action code="Boundary('Acq/Power-Mode/Tx/Power', 'TxPowerDown')"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Power-Mode', 2))"/>
+	<action code="VoltageDoppler('Power-Mode', $same, 0.038, 20.0, 11.2, 22.7)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Power-Mode', 3))"/>
+	<action code="VoltageDoppler('Power-Mode', $same, 0.038, 20.0, 11.2, 22.7)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Power-Mode', 4))"/>
+	<action code="VoltageDoppler('Power-Mode', $same, 0.038, 20.0, 11.2, 22.7)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Power-Mode', 5))"/>
+	<action code="VoltageDoppler('Power-Mode', $same, 0.038, 20.0, 11.2, 22.7)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Power-Mode', 6))"/>
+	<action code="VoltageDoppler('Power-Mode', $same, 0.038, 20.0, 11.2, 22.7)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Power-Mode', 7))"/>
+	<action code="VoltageDoppler('Power-Mode', $same, 0.038, 20.0, 11.2, 22.7)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Power-Mode', 8))"/>
+	<action code="VoltageDoppler('Power-Mode', $same, 0.038, 20.0, 11.2, 22.7)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Power-Mode', 9))"/>
+	<action code="VoltageDoppler('Power-Mode', $same, 0.038, 20.0, 11.2, 22.7)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Power-Mode', 10))"/>
+	<action code="VoltageDoppler('Power-Mode', $same, 0.038, 20.0, 11.2, 22.7)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Power-Mode', 20))"/>
+	<action code="VoltageDoppler('Power-Mode', $same, 0.038, 20.0, 11.2, 22.7)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Power-Mode', 30))"/>
+	<action code="VoltageDoppler('Power-Mode', $same, 0.038, 20.0, 11.2, 22.7)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Power-Mode', 40))"/>
+	<action code="VoltageDoppler('Power-Mode', $same, 0.038, 20.0, 11.2, 22.7)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Power-Mode', 50))"/>
+	<action code="VoltageDoppler('Power-Mode', $same, 0.038, 20.0, 11.2, 22.7)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Power-Mode', 60))"/>
+	<action code="VoltageDoppler('Power-Mode', $same, 0.038, 20.0, 11.2, 22.7)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Power-Mode', 70))"/>
+	<action code="VoltageDoppler('Power-Mode', $same, 0.038, 20.0, 11.2, 22.7)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Power-Mode', 80))"/>
+	<action code="VoltageDoppler('Power-Mode', $same, 0.038, 20.0, 11.2, 22.7)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Power-Mode', 90))"/>
+	<action code="VoltageDoppler('Power-Mode', $same, 0.038, 20.0, 11.2, 22.7)"/>
+	<action code="=($same, ScanRestart2('TxPower', 'Power-Mode', 100))"/>
+	<action code="VoltageDoppler('Power-Mode', $same, 0.038, 20.0, 11.2, 22.7)"/>
+	<action code="Boundary('Acq/Power-Mode/Tx/Power', 'TxPowerUp')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0099 -->
+	<action code="=($logmsg, 'TST-28-0099:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="ScanRestart2('Persist5', 'Power-Mode', 'Off')"/>
+	<action code="Boundary('Acq/Power-Mode/Display/Persist-Name', 'PersistDown')"/>
+	<action code="ScanRestart2('Persist5', 'Power-Mode', 'Low')"/>
+	<action code="ScanRestart2('Persist5', 'Power-Mode', 'Med')"/>
+	<action code="ScanRestart2('Persist5', 'Power-Mode', 'High')"/>
+	<action code="ScanRestart2('Persist5', 'Power-Mode', 'Max')"/>
+	<action code="Boundary('Acq/Power-Mode/Display/Persist-Name', 'PersistUp')"/>
+	<action code="ScanRestart2('Persist5', 'Power-Mode', 'Off')"/>		<!-- set back to original value -->
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0100 -->
+	<action code="=($logmsg, 'TST-28-0100:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="Frequency('Power-Mode', 40000000, 40000000)"/>
+	<action code="ScanRestart3('BeamAngle', 'Power-Mode', -15, 'in range')"/>
+	<action code="ScanRestart3('BeamAngle', 'Power-Mode', 0, 'in range')"/>
+	<action code="ScanRestart3('BeamAngle', 'Power-Mode', 15, 'in range')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- Nonlinear Contrast Mode -->
+	<action code="=($logmsg, 'Nonlinear Contrast Mode')"/>
+	<log level="warning">script:$logmsg</log>
+	
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0101 -->
+	<action code="=($logmsg, 'TST-28-0101:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<cmd code="Reset"/>		<!-- simulate unplug transducer or reopen the app -->
+	<action code="PauseScan()"/>
+	<!-- action code="InitializeTransducerSim('MS-700', 'General Imaging')"/ -->	<!-- with simulator -->
+	<action code="InitializeTransducer('MS-700', 'General Imaging')"/>	<!-- on system -->
+	<sleep time="10000"/>
+	<action code="Contrast('NLC')"/>
+	<action code="ModeNotSupported('ContrastMode')"/>
+
+	<cmd code="Reset"/>		<!-- simulate unplug transducer or reopen the app -->
+	<action code="PauseScan()"/>
+	<!-- action code="InitializeTransducerSim('MS-700', 'Cardiology')"/ -->	<!-- with simulator -->
+	<action code="InitializeTransducer('MS-700', 'Cardiology')"/>	<!-- on system -->
+	<sleep time="10000"/>
+	<action code="Contrast('NLC')"/>
+	<action code="ModeNotSupported('ContrastMode')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- PA-Mode -->
+	<action code="=($logmsg, 'PA-Mode')"/>
+	<log level="warning">script:$logmsg</log>
+	
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+	<!-- TST-28-0102 -->
+	<action code="=($logmsg, 'TST-28-0102:')"/>
+	<log level="warning">script:$logmsg</log>
+
+	<action code="PauseScan()"/>
+	<!-- action code="InitializeTransducerSim('MS-700', 'General Imaging')"/ -->	<!-- with simulator -->
+	<action code="InitializeTransducer('MS-700', 'General Imaging')"/>	<!-- on system -->
+	<sleep time="10000"/>
+	<action code="ModeNotSupported('PaMode')"/>
+
+	<action code="PauseScan()"/>
+	<!-- action code="InitializeTransducerSim('MS-700', 'Cardiology')"/ -->	<!-- with simulator -->
+	<action code="InitializeTransducer('MS-700', 'Cardiology')"/>	<!-- on system -->
+	<sleep time="10000"/>
+	<action code="ModeNotSupported('PaMode')"/>
+
+	<action code="=($logmsg, ' ')"/>
+	<log>script:$logmsg</log>
+
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,132 @@
+<?xml version="1.0"?>
+
+<!-- *************************************************************************************
+Laser stress/duration test script
+
+** make sure no pop up window **
+** make sure the transducer is initialized **
+** make sure the laser cart is initialized **
+
+Rev 1.0 - 2012-0116 - Jia Qi created the first draft
+************************************************************************************** -->
+
+<script logFile="C:\LaserStressTest\LaserStressTest_service1_script:$sysDateTime.txt" logClear="true">
+  <using name="pdm" progID="VsiVevo.TestScriptPdm"/>
+  <using name="dcm" progID="VsiVevo.TestScriptDcm"/>
+  <using name="cmd" progID="VsiVevo.TestScriptCommand"/>
+  <using name="ui" progID="VsiVevo.ScriptUI"/>
+
+  <!-- Record Script Begin Time -->
+  <action code="assign($_beginDateTime, $sysDateTime)"/>
+
+  <!-- Declare Global variables before Link -->
+  <action code="assign($_countO, 0)"/>
+  <!-- "Energy Optimization" window pop up count -->
+  <action code="assign($_countF, 0)"/>
+  <!-- "Energy Optimization Failed" window pop up count -->
+  <action code="assign($_countPA, 0)"/>
+  <!-- PA submode scanning count -->
+  <action code="assign($_countLSb, 0)"/>
+  <!-- Laser Shout Count at the beginning of the script -->
+  <action code="assign($_countLSf, 0)"/>
+  <!-- Laser Shout Count at the finish of the script -->
+  <action code="assign($_PassRate, 100.0)"/>
+  <!-- Passing rate for Optimization -->
+
+  <link file="VsiLaserFunc.vts"/>
+
+  <!-- Check if Transducer is initialized or not -->
+  <pdm action="read" name="App/Settings/System/State" type="long" return="$check"/>
+  <action code="=($checkActivated, bitwiseAnd($check, 512))"/>
+  <!-- check Transducer Active bit -->
+  <action code="=($checkScan, bitwiseAnd($check, 1024))"/>
+  <!-- check Scanning bit -->
+  <!-- Check if Laser Cart is initialized or not -->
+  <pdm action="read" name="Hardware/Control/HwLaserControl/PA-Laser-Init-State" return="$checkLaser"/>
+
+  <choose>
+    <!-- If Transducer is NOT initialized, stop the script -->
+    <when test="less($checkActivated, 512)">
+      <!-- Transducer Active bit is disabled -->
+      <log level="error">Please initialize the transducer before running the script!</log>
+    </when>
+    <!-- If Laser Cart is NOT initialized, stop the script -->
+    <when test="notequal($checkLaser, $true)">
+      <log level="error">Please initialize the laser cart before running the script!</log>
+    </when>
+
+    <otherwise>
+      <!-- Preparation Begin -->
+      <log> </log>
+      <log time="true">Preparation begins...</log>
+      <!-- Record Laser Serial Number -->
+      <action code="LaserSerialNumber()"/>
+      <!-- Record Laser Shot Count at the beginning of the script -->
+      <action code="assign($_countLSb, LaserShotCountReading())"/>
+      <!-- Enable 5 Wavelengths for PA-Mode -->
+      <action code="Enable5Wavelength()"/>
+      <!-- Force to Optimize -->
+      <cmd code="PaMode"/>
+      <sleep time="7000"/>
+      <pdm action="write" name="Acq/Pa-Mode/PaModeSoft/Energy-Optimize-Req">true</pdm>
+      <pdm action="write" name="Acq/Pa-Mode/PaModeSoft/Energy-Optimize-Skip-Count" base="10">0</pdm>
+      <!-- Reduce Cine Loop Size for PA-Mode from Max to 100 frames -->
+      <action code="CineLoopSize('Pa-Mode')"/>
+      <sleep time="1000"/>
+      <!-- Optimization -->
+      <action code="OptimizationDuringPreparation(95)"/>
+      <!-- No matter the "Energy Optimization" window pop up or not, save the PA cine loop-->
+      <!-- By Cine Store in PA-Mode to make sure ScreenKey selection "Display Layout" will be highlighted afterwards-->
+      <!-- Set Auto Save on Image Label for the Entire Cine Loop -->
+      <pdm action="write" name="App/Settings/System/Auto-Save-On-Label">true</pdm>
+      <sleep time="1000"/>
+      <pdm action="write" name="App/Settings/System/Auto-Save-Type">0</pdm>
+      <sleep time="1000"/>
+      <action code="CineStorewithImageLabel('Image0')"/>
+      <log time="true">Preparation finished.</log>
+      <log> </log>
+      <!-- Preparation Finish -->
+
+      <!-- First 1 hour cycle -->
+      <log time="true">First 1 hour cycle begins...</log>
+      <!-- Record Laser Shot Count and Laser Voltage at the beginning of 1 hour cycle -->
+      <action code="assign($countLS, LaserShotCountReading())"/>
+      <action code="LaserVoltageReading()"/>
+      <!-- 1 hour cycle -->
+      <action code="TwoHoursCycle(5, 10, 95, 2000)"/>
+      <!-- Record Laser Shot Count and Laser Voltage after 1 hour cycle -->
+      <action code="assign($countLS, LaserShotCountReading())"/>
+      <action code="LaserVoltageReading()"/>
+      <log time="true">First 1 hour cycle finished.</log>
+
+      <!-- Cool down the laser for 10 min -->
+      <log> </log>
+      <log  time="true">Cooling down the laser for 10 min...</log>
+      <log> </log>
+      <sleep time="600000"/>
+
+      <!-- Second 1 hour cycle -->
+      <log time="true">Second 1 hour cycle begins...</log>
+      <!-- Record Laser Shot Count and Laser Voltage at the beginning of 1 hour cycle -->
+      <action code="assign($countLS, LaserShotCountReading())"/>
+      <action code="LaserVoltageReading()"/>
+      <!-- 1 hour cycle -->
+      <action code="TwoHoursCycle(5, 10, 95, -2000)"/>
+      <!-- Record Laser Shot Count and Laser Voltage after 1 hour cycle -->
+      <action code="assign($_countLSf, LaserShotCountReading())"/>
+      <action code="LaserVoltageReading()"/>
+      <log time="true">Second 1 hour cycle finished.</log>
+
+      <!-- Generate Report -->
+      <action code="Report()"/>
+    </otherwise>
+  </choose>
+</script>
+
+
+
+
+
+
+
+

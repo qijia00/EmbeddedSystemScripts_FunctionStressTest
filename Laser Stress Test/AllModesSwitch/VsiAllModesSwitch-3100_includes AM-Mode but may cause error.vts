@@ -1,0 +1,223 @@
+<?xml version="1.0"?>
+
+<!--
+    B-Mode to M-Mode to Color Doppler Mode to Power Doppler Mode to PW Doppler Mode to PW Tissue Doppler Mode to Nonlinear Contrast Mode (if applicable) Switch duration test script
+    ** Make sure the system is NOT scanning before starting the script **
+    ** Make sure a transducer has been initialized **
+
+    Rev 1.0 - initial release by Jia Qi
+ -->
+
+<script logFile="C:\AllModesSwitchTest\VsiAllModesSwitch-3100_script:$sysDateTime.txt" logClear="true">
+  <using name="pdm" progID="VsiVevo.TestScriptPdm" />
+  <using name="dcm" progID="VsiVevo.TestScriptDcm" />
+  <using name="cmd" progID="VsiVevo.TestScriptCommand" />
+  <using name="ui" progID="VsiVevo.ScriptUI" />
+
+  <!-- Record Script Begin Time -->
+  <action code="assign($_beginDateTime, $sysDateTime)" />
+
+  <pdm action="read" name="App/Settings/System/State" type="long" return="$check" />
+  <action code="=($checkActivated, bitwiseAnd($check, 512))" />
+  <action code="=($checkScan, bitwiseAnd($check, 1024))" />
+
+  <pdm action="read" name="Acq/Transducer/Transducer-General/Id" type="long" return="$check" />
+  <action code="assign($checkID, or(equal($check, 60), equal($check, 58), equal($check, 57)))" />
+
+  <choose>
+    <!-- If Transducer is NOT initialized, stop the script -->
+    <when test="less($checkActivated, 512)">
+      <!-- Transducer Active bit is disabled -->
+      <log level="error">Please initialize a MX201 or 250 or 250s transducer before running the script!</log>
+    </when>
+    <!-- If in scan, stop the script -->
+    <when test="greater($checkScan, 0)">
+      <!-- Scan bit is enabled -->
+      <log level="error">Stop scanning before running the script!</log>
+    </when>
+
+    <otherwise>
+      <action code="=($count, 1)"/>
+      <!-- Enable auto save clip on image label -->
+      <pdm action="write" name="App/Settings/System/Auto-Save-On-Label">1</pdm>
+      <pdm action="write" name="App/Settings/System/Auto-Save-Type">0</pdm>
+
+      <loop count="350"> 
+
+        <action code="assign($msg, 'Retraining ... ')"/>
+        <log>script:$msg</log>
+        <dcm action="write" name="Hardware/Control/HwSystemControl/Train-All"/>
+        <sleep time="20000"/>
+
+        <loop count="3">
+          <!-- every 3 loops do a re-train -->
+
+          <!-- B-Mode -->
+          <cmd code="BMode"/>
+          <sleep time="20000"/>
+
+          <cmd code="Scan"/>
+          <!-- does a Freeze -->
+          <sleep time="5000"/>
+
+          <action code="=($msg, 'Saving image ')"/>
+          <action code="+=($msg, $count)"/>
+          <action code="+=($msg, ' B-Mode')"/>
+          <log>script:$msg</log>
+          <action code="=($msg, 'Image ')"/>
+          <!-- Construct image label text - "Image $count" -->
+          <action code="+=($msg, $count)"/>
+          <cmd code="ImageLabelTouch" value="script:$msg"/>
+          <!-- Show image label panel -->
+          <sleep time="1000"/>
+
+          <!-- Update counter -->
+          <action code="+=($count, 1)"/>
+          <sleep time="1000"/>
+
+          <!-- M-Mode -->
+          <cmd code="MMode" />
+          <sleep time="5000" />
+          <cmd code="MModeStartStop" />
+          <sleep time="10000" />
+
+          <cmd code="Scan" />
+          <!-- does a Freeze -->
+          <sleep time="5000" />
+
+          <action code="=($msg, 'Saving image ')" />
+          <action code="+=($msg, $count)" />
+          <action code="+=($msg, ' M-Mode')" />
+          <log>script:$msg</log>
+          <action code="=($msg, 'Image ')" />
+          <!-- Construct image label text - "Image $count" -->
+          <action code="+=($msg, $count)" />
+          <cmd code="ImageLabelTouch" value="script:$msg" />
+          <sleep time="1000" />
+
+          <!-- Update counter -->
+          <action code="+=($count, 1)" />
+          <sleep time="1000" />
+          
+          <!-- Color Doppler Mode -->
+          <cmd code="ColorMode" />
+          <sleep time="30000" />
+
+          <cmd code="Scan" />
+          <!-- does a Freeze -->
+          <sleep time="5000" />
+
+          <action code="=($msg, 'Saving image ')" />
+          <action code="+=($msg, $count)" />
+          <action code="+=($msg, ' Color Doppler Mode')" />
+          <log>script:$msg</log>
+          <action code="=($msg, 'Image ')" />
+          <!-- Construct image label text - "Image $count" -->
+          <action code="+=($msg, $count)" />
+          <cmd code="ImageLabelTouch" value="script:$msg" />
+          <sleep time="1000" />
+
+          <!-- Update counter -->
+          <action code="+=($count, 1)" />
+          <sleep time="1000" />
+          
+          <!-- Power Doppler Mode -->
+          <cmd code="PowerMode" />
+          <sleep time="30000" />
+
+          <cmd code="Scan" />
+          <!-- does a Freeze -->
+          <sleep time="5000" />
+
+          <action code="=($msg, 'Saving image ')" />
+          <action code="+=($msg, $count)" />
+          <action code="+=($msg, ' Power Doppler Mode')" />
+          <log>script:$msg</log>
+          <action code="=($msg, 'Image ')" />
+          <!-- Construct image label text - "Image $count" -->
+          <action code="+=($msg, $count)" />
+          <cmd code="ImageLabelTouch" value="script:$msg" />
+          <sleep time="1000" />
+
+          <!-- Update counter -->
+          <action code="+=($count, 1)" />
+          <sleep time="1000" />
+          
+          <!-- PW Doppler Mode -->
+          <cmd code="PwMode"/>
+          <sleep time="5000"/>
+          <cmd code="PwModeStartStop"/>
+          <sleep time="10000"/>
+
+          <cmd code="Scan"/>
+          <!-- does a Freeze -->
+          <sleep time="5000"/>
+
+          <action code="=($msg, 'Saving image ')"/>
+          <action code="+=($msg, $count)"/>
+          <action code="+=($msg, ' PW Doppler Mode')"/>
+          <log>script:$msg</log>
+          <action code="=($msg, 'Image ')"/>
+          <!-- Construct image label text - "Image $count" -->
+          <action code="+=($msg, $count)"/>
+          <cmd code="ImageLabelTouch" value="script:$msg"/>
+          <sleep time="1000"/>
+
+          <!-- Update counter -->
+          <action code="+=($count, 1)"/>
+          <sleep time="1000"/>
+          
+          <!-- PW Tissue Doppler Mode -->
+          <cmd code="TissueMode"/>
+          <sleep time="5000"/>
+          <cmd code="PwTissueModeStartStop"/>
+          <sleep time="10000"/>
+
+          <cmd code="Scan"/>
+          <!-- does a Freeze -->
+          <sleep time="5000"/>
+
+          <action code="=($msg, 'Saving image ')"/>
+          <action code="+=($msg, $count)"/>
+          <action code="+=($msg, ' PW Tissue Doppler Mode')"/>
+          <log>script:$msg</log>
+          <action code="=($msg, 'Image ')"/>
+          <!-- Construct image label text - "Image $count" -->
+          <action code="+=($msg, $count)"/>
+          <cmd code="ImageLabelTouch" value="script:$msg"/>
+          <sleep time="1000"/>
+
+          <!-- Update counter -->
+          <action code="+=($count, 1)"/>
+          <sleep time="1000"/>
+
+          <!-- If Transducer is a MX201 or 250 or 250s transducer, acquire and save Nonlinear Contrast Mode -->
+          <if test="equal($checkID, 'true')">
+            <!-- Nonlinear Contrast Mode -->
+            <cmd code="ContrastMode" />
+            <sleep time="30000" />
+
+            <cmd code="Scan" />
+            <!-- does a Freeze -->
+            <sleep time="5000" />
+
+            <action code="=($msg, 'Saving image ')" />
+            <action code="+=($msg, $count)" />
+            <action code="+=($msg, ' Nonlinear Contrast Mode')" />
+            <log>script:$msg</log>
+            <action code="=($msg, 'Image ')" />
+            <!-- Construct image label text - "Image $count" -->
+            <action code="+=($msg, $count)" />
+            <cmd code="ImageLabelTouch" value="script:$msg" />
+            <sleep time="1000" />
+
+            <!-- Update counter -->
+            <action code="+=($count, 1)" />
+            <sleep time="1000" />
+          </if>         
+
+        </loop>
+      </loop>
+    </otherwise>
+  </choose>
+</script>

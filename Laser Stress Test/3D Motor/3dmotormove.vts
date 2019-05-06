@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+
+<!-- *************************************************************************************
+	Move Motor Continuously
+************************************************************************************** -->
+
+<script>
+	<using name="pdm" progID="VsiVevo.TestScriptPdm"/>
+	<using name="dcm" progID="VsiVevo.TestScriptDcm"/>
+	<using name="cmd" progID="VsiVevo.TestScriptCommand"/>
+	<using name="ui" progID="VsiVevo.ScriptUI"/>
+
+	<log action="clear"/> <!-- clear log -->
+
+	<sleep time="1000"/>
+
+	<loop count="100">	
+		<pdm action="write" name="Hardware/Control/Hw3dMotor/Position" type="double" base="10">10.0</pdm>
+		<dcm action="write" name="Hardware/Control/Hw3dMotor/Position"/>
+		<sleep time="2000"/>
+	
+		<pdm action="write" name="Hardware/Control/Hw3dMotor/Position" type="double" base="10">0.0</pdm>
+		<dcm action="write" name="Hardware/Control/Hw3dMotor/Position"/>
+		<sleep time="2000"/>
+	
+	</loop>
+
+</script>

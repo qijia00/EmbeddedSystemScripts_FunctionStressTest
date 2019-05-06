@@ -1,0 +1,313 @@
+<?xml version="1.0"?>
+
+<!-- *************************************************************************************
+PA Sub Modes Switch duration test script
+
+Do the laser energy optimization every time when the "Energy Optimization" window pop up.
+
+** make sure the transducer is initialized **
+** make sure the laser cart is initialized **
+
+Rev 1.0 - 2011-1031 - Jia Qi created the first draft
+************************************************************************************** -->
+
+<script logFile="C:\scriptPASubModesSwitch.txt" logClear="true">
+  <using name="pdm" progID="VsiVevo.TestScriptPdm"/>
+  <using name="dcm" progID="VsiVevo.TestScriptDcm"/>
+  <using name="cmd" progID="VsiVevo.TestScriptCommand"/>
+  <using name="ui" progID="VsiVevo.ScriptUI"/>
+
+  <link file="VsiSVPFunc.vts"/>
+
+  <!-- Check if Transducer is initialized or not -->
+  <pdm action="read" name="App/Settings/System/State" type="long" return="$check"/>
+  <action code="=($checkActivated, bitwiseAnd($check, 512))"/>
+  <!-- check Transducer Actived bit -->
+  <action code="=($checkScan, bitwiseAnd($check, 1024))"/>
+  <!-- check Scanning bit -->
+  <!-- Check if Laser Cart is initialized or not -->
+  <pdm action="read" name="Hardware/Control/HwLaserControl/PA-Laser-Init-State" return="$checkLaser"/>
+
+  <choose>
+    <!-- If Transducer is NOT initialized, stop the script -->
+    <when test="less($checkActivated, 512)">
+      <!-- Tansducer Actived bit is disabled -->
+      <log level="error">Please initialize the transducer before running the script!</log>
+    </when>
+    <!-- If Laser Cart is NOT initialized, stop the script -->
+    <when test="notequal($checkLaser, $true)">
+      <log level="error">Please initialize the laser cart before running the script!</log>
+    </when>
+
+    <otherwise>
+      <!-- Preparation Begin -->
+      <!-- Reduce Cine Loop Size for PA-Mode from Max to 100 frames -->
+      <action code="CineLoopSize('Pa-Mode')"/>
+      <sleep time="1000"/>
+      <!-- Start scanning in PA-Mode -->
+      <action code="StartScan('PaMode')"/>
+      <sleep time="5000"/>
+      <!-- Pause scanning in PA-Mode -->
+      <action code="PauseScan()"/>
+      <sleep time="1000"/>
+      <!-- Check if the "Energy Optimization" window pop up or not after pause scanning-->
+      <ui>
+        <window action="find" title="Energy Optimization" return="$check"/>
+      </ui>
+      <!-- If the "Energy Optimization" window pop up -->
+      <if test="notequal(0, $check)">
+        <log time="true" level="error">The "Energy Optimization" window popped up.</log>
+        <ui>
+          <input set="window" title="Energy Optimization"/>
+          <!-- active the Energy Optimization window -->
+          <input key="#T1000"/>
+          <!-- wait 1 sec -->
+          <input key="#Ky"/>
+          <!-- OK the window -->
+          <input key="#T150000"/>
+          <!-- wait 2.5 min -->
+        </ui>
+        <!-- Start scanning in PA-Mode -->
+        <cmd code="PaMode"/>
+        <sleep time="10000"/>
+        <!-- Pause scanning in PA-Mode -->
+        <cmd code="Scan"/>
+        <sleep time="3000"/>
+        <!-- Record Laser OPO and SHG Energy every time after Optimize Laser Energy -->
+        <pdm action="read" name="Hardware/Control/HwLaserControl/PA-Ophir-Opo-Energy-Average" return="$check"/>
+        <action code="=($logmsg, 'The HwLaserControl/PA-Ophir-Opo-Energy-Average is ')"/>
+        <action code="+=($logmsg, $check)"/>
+        <action code="+=($logmsg, '.')"/>
+        <log level="warning">script:$logmsg</log>
+        <pdm action="read" name="Hardware/Control/HwLaserControl/PA-Ophir-Opo-Energy-Measure" return="$check"/>
+        <action code="=($logmsg, 'The HwLaserControl/PA-Ophir-Opo-Energy-Measure is ')"/>
+        <action code="+=($logmsg, $check)"/>
+        <action code="+=($logmsg, '.')"/>
+        <log level="warning">script:$logmsg</log>
+        <pdm action="read" name="Hardware/Control/HwLaserControl/PA-Ophir-Shg-Energy-Average" return="$check"/>
+        <action code="=($logmsg, 'The HwLaserControl/PA-Ophir-Shg-Energy-Average is ')"/>
+        <action code="+=($logmsg, $check)"/>
+        <action code="+=($logmsg, '.')"/>
+        <log level="warning">script:$logmsg</log>
+        <pdm action="read" name="Hardware/Control/HwLaserControl/PA-Ophir-Shg-Energy-Measure" return="$check"/>
+        <action code="=($logmsg, 'The HwLaserControl/PA-Ophir-Shg-Energy-Measure is ')"/>
+        <action code="+=($logmsg, $check)"/>
+        <action code="+=($logmsg, '.')"/>
+        <log level="warning">script:$logmsg</log>
+      </if>
+      <!-- No matter the "Energy Optimization" window pop up or not, save the PA cine loop-->
+      <!-- Set Auto Save on Image Label for the Entire Cine Loop -->
+      <pdm action="write" name="App/Settings/System/Auto-Save-On-Label">true</pdm>
+      <sleep time="1000"/>
+      <pdm action="write" name="App/Settings/System/Auto-Save-Type">0</pdm>
+      <sleep time="1000"/>
+      <!-- By Cine Store in PA-Mode to make sure ScreenKey selection "Display Layout" will be highlighted afterwards-->
+      <cmd code="ImageLabel"/>
+      <sleep time="1000"/>
+      <ui>
+        <input key="#ZImage0"/>
+        <!-- Enter "Image0" as the Image Label-->
+        <input key="#T1000"/>
+        <!-- wait 1 sec -->
+        <input key="#SE"/>
+        <!-- use Enter key to OK the "Image Label" window -->
+        <input key="#T1000"/>
+        <!-- wait 1 sec -->
+      </ui>
+      <sleep time="7000"/>
+      <!-- Preparation Finish -->
+
+      <!-- Record Laser Shot Count and Laser Voltage at the beginning of the script -->
+      <dcm action="read" name="Hardware/Control/HwLaserControl/PA-Laser-Shot-Count"/>
+      <pdm action="read" name="Hardware/Control/HwLaserControl/PA-Laser-Shot-Count" return="$check"/>
+      <action code="=($logmsg, 'The Laser Shot Count is ')"/>
+      <action code="+=($logmsg, $check)"/>
+      <action code="+=($logmsg, '.')"/>
+      <log level="warning">script:$logmsg</log>
+      <dcm action="read" name="Hardware/Control/HwLaserControl/PA-Laser-Voltage"/>
+      <pdm action="read" name="Hardware/Control/HwLaserControl/PA-Laser-Voltage" return="$check"/>
+      <action code="=($logmsg, 'The Laser Voltage is ')"/>
+      <action code="+=($logmsg, $check)"/>
+      <action code="+=($logmsg, '.')"/>
+      <log level="warning">script:$logmsg</log>
+
+      <!-- Each loop will run for ~3 minutes. -->
+      <!-- loop 2000 ~ 3 days -->
+      <action code="=($spectro, 'N')"/>
+      <action code="=($count, 0)"/>
+      <loop count="2000">
+        <!-- Label "Image#:" in the script result -->
+        <action code="=($count, add($count, 1))"/>
+        <action code="=($logmsg, 'Image')"/>
+        <action code="+=($logmsg, $count)"/>
+        <action code="+=($logmsg, ':')"/>
+        <log time="true">script:$logmsg</log>
+        <!-- Start scanning in PA-Mode -->
+        <cmd code="PaMode"/>
+        <sleep time="7000"/>
+        <!-- Select "PA Acquisition" ScreenKey selection -->
+        <cmd code="ScreenKeyRight"/>
+        <sleep time="1000"/>
+        <cmd code="ScreenKeySelect"/>
+        <sleep time="1000"/>
+        <!-- If the previous sub mode is NOT "Spectro", select a different PA sub mode -->
+        <if test="notequal($spectro, 'Y')">
+          <cmd code="ScreenKeyRight"/>
+          <sleep time="1000"/>
+          <cmd code="ScreenKeySelect"/>
+          <sleep time="1000"/>
+        </if>
+        <!-- If the previous sub mode is "Spectro", stay scanning in "Single" sub mode -->
+        <if test="equal($spectro, 'Y')">
+          <action code="=($spectro, 'N')"/>
+        </if>
+        <!-- Check the "Spectro Acquisition Setup" window -->
+        <ui>
+          <window action="find" title="Spectro Acquisition Setup" return="$check"/>
+        </ui>
+        <!-- If the "Spectro Acquisition Setup" window pop up -->
+        <if test="notequal(0, $check)">
+          <log>The "Spectro Acquisition Setup" window popped up.</log>
+          <action code="=($spectro, 'Y')"/>
+          <ui>
+            <input key="#SE"/>
+            <!-- use Enter key to OK the "Spectro Acquisition Setup" window -->
+            <input key="#T1000"/>
+            <!-- wait 1 sec -->
+          </ui>
+        </if>
+        <!-- Scanning 3 minutes for non-Spectro sub mode or scanning till Spectro sub mode is paused -->
+        <loop count="60">
+          <sleep time="3000"/>
+          <!-- For Spectro sub mode, break out of the loop once the scanning is done -->
+          <pdm action="read" name="App/Settings/System/State" type="long" return="$check"/>
+          <action code="=($checkScan, bitwiseAnd($check, 1024))"/>
+          <if test="less($checkScan, 1024)">
+            <!-- Scanning bit is disabled -->
+            <break/>
+            <!-- for Spectro sub mode -->
+          </if>
+        </loop>
+        <!-- For non-Spectro sub mode, manually pause scanning after 3 minutes -->
+        <if test="greater($checkScan, 0)">
+          <!-- Scanning bit is enabled -->
+          <!-- Pause scanning in PA-Mode -->
+          <cmd code="Scan"/>
+          <sleep time="3000"/>
+        </if>
+
+        <!-- Record Laser OPO and SHG Energy every time after acquire each cine loop -->
+        <pdm action="read" name="Hardware/Control/HwLaserControl/PA-Ophir-Opo-Energy-Average" type="float" return="$check"/>
+        <action code="=($logmsg, 'The HwLaserControl/PA-Ophir-Opo-Energy-Average is ')"/>
+        <action code="+=($logmsg, $check)"/>
+        <action code="+=($logmsg, '.')"/>
+        <log level="warning">script:$logmsg</log>
+        <pdm action="read" name="Hardware/Control/HwLaserControl/PA-Ophir-Opo-Energy-Measure" return="$check"/>
+        <action code="=($logmsg, 'The HwLaserControl/PA-Ophir-Opo-Energy-Measure is ')"/>
+        <action code="+=($logmsg, $check)"/>
+        <action code="+=($logmsg, '.')"/>
+        <log level="warning">script:$logmsg</log>
+        <pdm action="read" name="Hardware/Control/HwLaserControl/PA-Ophir-Shg-Energy-Average" return="$check"/>
+        <action code="=($logmsg, 'The HwLaserControl/PA-Ophir-Shg-Energy-Average is ')"/>
+        <action code="+=($logmsg, $check)"/>
+        <action code="+=($logmsg, '.')"/>
+        <log level="warning">script:$logmsg</log>
+        <pdm action="read" name="Hardware/Control/HwLaserControl/PA-Ophir-Shg-Energy-Measure" return="$check"/>
+        <action code="=($logmsg, 'The HwLaserControl/PA-Ophir-Shg-Energy-Measure is ')"/>
+        <action code="+=($logmsg, $check)"/>
+        <action code="+=($logmsg, '.')"/>
+        <log level="warning">script:$logmsg</log>
+
+        <!-- Check if the "Energy Optimization" window pop up or not after acquire each cine loop-->
+        <ui>
+          <window action="find" title="Energy Optimization" return="$check"/>
+        </ui>
+        <!-- If the "Energy Optimization" window pop up -->
+        <if test="notequal(0, $check)">
+          <log time="true" level="error">The "Energy Optimization" window popped up.</log>
+          <ui>
+            <input set="window" title="Energy Optimization"/>
+            <!-- active the Energy Optimization window -->
+            <input key="#T1000"/>
+            <!-- wait 1 sec -->
+            <input key="#Ky"/>
+            <!-- OK the window -->
+            <input key="#T150000"/>
+            <!-- wait 2.5 min -->
+          </ui>
+          <!-- Start scanning in PA-Mode -->
+          <cmd code="PaMode"/>
+          <sleep time="10000"/>
+          <!-- Pause scanning in PA-Mode -->
+          <cmd code="Scan"/>
+          <sleep time="3000"/>
+          <!-- Record Laser OPO and SHG Energy every time after Optimize Laser Energy -->
+          <pdm action="read" name="Hardware/Control/HwLaserControl/PA-Ophir-Opo-Energy-Average" return="$check"/>
+          <action code="=($logmsg, 'The HwLaserControl/PA-Ophir-Opo-Energy-Average is ')"/>
+          <action code="+=($logmsg, $check)"/>
+          <action code="+=($logmsg, '.')"/>
+          <log level="warning">script:$logmsg</log>
+          <pdm action="read" name="Hardware/Control/HwLaserControl/PA-Ophir-Opo-Energy-Measure" return="$check"/>
+          <action code="=($logmsg, 'The HwLaserControl/PA-Ophir-Opo-Energy-Measure is ')"/>
+          <action code="+=($logmsg, $check)"/>
+          <action code="+=($logmsg, '.')"/>
+          <log level="warning">script:$logmsg</log>
+          <pdm action="read" name="Hardware/Control/HwLaserControl/PA-Ophir-Shg-Energy-Average" return="$check"/>
+          <action code="=($logmsg, 'The HwLaserControl/PA-Ophir-Shg-Energy-Average is ')"/>
+          <action code="+=($logmsg, $check)"/>
+          <action code="+=($logmsg, '.')"/>
+          <log level="warning">script:$logmsg</log>
+          <pdm action="read" name="Hardware/Control/HwLaserControl/PA-Ophir-Shg-Energy-Measure" return="$check"/>
+          <action code="=($logmsg, 'The HwLaserControl/PA-Ophir-Shg-Energy-Measure is ')"/>
+          <action code="+=($logmsg, $check)"/>
+          <action code="+=($logmsg, '.')"/>
+          <log level="warning">script:$logmsg</log>
+        </if>
+
+        <!-- No matter the "Energy Optimization" window pop up or not, save the PA cine loop-->
+        <cmd code="ImageLabel"/>
+        <sleep time="1000"/>
+        <action code="=($imagelabel, '#ZImage')"/>
+        <action code="+=($imagelabel, $count)"/>
+        <ui>
+          <input key="script:$imagelabel"/>
+          <!-- Enter the Image Label-->
+          <input key="#T1000"/>
+          <!-- wait 1 sec -->
+          <input key="#SE"/>
+          <!-- OK the "Image Label" window -->
+          <input key="#T1000"/>
+          <!-- wait 1 sec -->
+        </ui>
+        <sleep time="10000"/>
+      </loop>
+
+      <!-- Record Laser Shot Count and Laser Voltage at the end of the script -->
+      <dcm action="read" name="Hardware/Control/HwLaserControl/PA-Laser-Shot-Count"/>
+      <pdm action="read" name="Hardware/Control/HwLaserControl/PA-Laser-Shot-Count" return="$check"/>
+      <action code="=($logmsg, 'The Laser Shot Count is ')"/>
+      <action code="+=($logmsg, $check)"/>
+      <action code="+=($logmsg, '.')"/>
+      <log level="warning">script:$logmsg</log>
+      <dcm action="read" name="Hardware/Control/HwLaserControl/PA-Laser-Voltage"/>
+      <pdm action="read" name="Hardware/Control/HwLaserControl/PA-Laser-Voltage" return="$check"/>
+      <action code="=($logmsg, 'The Laser Voltage is ')"/>
+      <action code="+=($logmsg, $check)"/>
+      <action code="+=($logmsg, '.')"/>
+      <log level="warning">script:$logmsg</log>
+    </otherwise>
+  </choose>
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+

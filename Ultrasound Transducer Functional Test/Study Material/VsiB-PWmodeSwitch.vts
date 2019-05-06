@@ -1,0 +1,100 @@
+<?xml version="1.0"?>
+
+<!--
+    B-Mode to PW-Doppler Mode Switch duration test script
+    ** Make sure the system is NOT scanning before starting the script **
+    ** Make sure a transducer has been initialize **
+
+    Rev 1.1 - 2010-1115 - JW added retrain, image label
+    Rev 1.2 - 2010-1116 - JW fixed syntax problems, cine store in B-Mode
+    Rev 1.3 - 2011-0125 - SP fixed auto save label ns
+-->
+
+<script>
+  <using name="pdm" progID="VsiVevo.TestScriptPdm"/>
+  <using name="dcm" progID="VsiVevo.TestScriptDcm"/>
+  <using name="cmd" progID="VsiVevo.TestScriptCommand"/>
+  <using name="ui" progID="VsiVevo.ScriptUI"/>
+
+  <pdm action="read" name="App/Settings/System/State" type="long" return="$check"/>
+  <action code="=($checkActivated, bitwiseAnd($check, 512))"/>
+  <action code="=($checkScan, bitwiseAnd($check, 1024))"/>
+
+  <choose>
+    <when test="less($checkActivated, 512)"> 
+      <action code="assign($msg, 'ERROR - Make transducer is initialized : ')"/>
+      <action code="+=($msg, $check)"/>
+      <log level="error">script:$msg</log>
+    </when>
+    <when test="greater($checkScan, 0)"> 
+      <action code="assign($msg, 'ERROR - Make sure system is NOT scanning : ')"/>
+      <action code="+=($msg, $check)"/>
+      <log level="error">script:$msg</log>
+    </when>
+
+    <otherwise>
+    <action code="=($count, 1)"/>
+    <pdm action="write" name="App/Settings/System/Auto-Save-On-Label">1</pdm>  <!-- Image Label saves frame not cine -->
+
+    <!-- Each loop will run for ~30 mins minutes. -->
+    <!-- loop 20 = 10 hrs; 48 = 24 hrs;  336 = 7 days -->
+    <loop count="1000">
+  
+      <action code="assign($msg, 'Retraining ... ')"/>
+      <log>script:$msg</log>
+      <dcm action="write" name="Hardware/Control/HwSystemControl/Train-All"/>
+      <sleep time="20000"/>
+  
+      <loop count="5">  <!-- every 5 loops do a re-train -->
+    
+        <cmd code="BMode"/>
+        <sleep time="160000"/>
+    
+        <cmd code="Scan"/>  <!-- does a Freeze -->
+        <sleep time="5000"/>
+    
+        <cmd code="ImageLabel"/>  <!-- Show image label panel -->
+        <sleep time="1000"/>
+        <action code="=($msg, 'Saving image ')"/>
+        <action code="+=($msg, $count)"/>
+        <action code="+=($msg, ' B-Mode')"/>
+        <log>script:$msg</log>
+        <action code="=($msg, '#ZImage ')"/>  <!-- Construct image label text - "Image $count" -->
+        <action code="+=($msg, $count)"/>
+        <ui>
+          <input key="script:$msg"/>  <!-- Set image label -->
+          <input key="#SE"/>  <!-- Enter (auto save) -->
+        </ui>
+        <!-- Update counter -->
+        <action code="+=($count, 1)"/>
+        <sleep time="1000"/>
+    
+        <cmd code="PwMode"/>  <!-- brings up sample volume overlay -->1+5
+        <sleep time="5000"/>
+        <cmd code="PwMode"/>  <!-- Start PW-Doppler Mode -->
+        <sleep time="160000"/>
+    
+        <cmd code="Scan"/>  <!-- does a Freeze -->
+        <sleep time="5000"/>
+  
+        <cmd code="ImageLabel"/>  <!-- Show image label panel -->
+        <sleep time="1000"/>
+        <action code="=($msg, 'Saving image ')"/>
+        <action code="+=($msg, $count)"/>
+        <action code="+=($msg, ' PW-Doppler Mode')"/>
+        <log>script:$msg</log>
+        <action code="=($msg, '#ZImage ')"/>  <!-- Construct image label text - "Image $count" -->
+        <action code="+=($msg, $count)"/>
+        <ui>
+          <input key="script:$msg"/>  <!-- Set image label -->
+          <input key="#SE"/>  <!-- Enter (auto save) -->
+        </ui>
+        <!-- Update counter -->
+        <action code="+=($count, 1)"/>
+        <sleep time="1000"/>
+    
+      </loop>
+    </loop>
+    </otherwise>
+  </choose>
+</script>

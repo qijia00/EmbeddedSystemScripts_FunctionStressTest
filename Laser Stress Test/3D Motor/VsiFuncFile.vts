@@ -1,0 +1,246 @@
+<?xml version="1.0"?>
+<script>
+
+  <!-- *************************************************************************************
+  
+        Saves the delay line values horizontally in a file.  A first column position id
+        is added first. File is CSV. Delay values are saved as nanoseconds.
+      
+        Example:
+          <action code="SaveDelayValues($fileName, $positionId)"/>    
+         
+          
+      ************************************************************************************* -->
+  <function name="SaveDelayValues" inline="false">   
+    <param name="$delayFile"/>    
+    <param name="$positionID"/>
+
+    <log>Export Delay-Values-ZeroCrossing</log>
+    
+    <pdm action="read" name="Test/Ats/AtsSoft/Delay-Values-ZeroCrossing" type="float" return="$delayValues[]"/>
+         
+    <file name="script:$delayFile" action="append" terminator=",">script:$positionID</file>
+    <file name="script:$delayFile" action="append" separator="," terminator="\n" maxElements="256">script:$delayValues[]</file>
+
+  </function>
+
+
+  <!-- *************************************************************************************
+  
+        Saves the delay line amplitude values horizontally in a file.  A first column position id
+        is added first. File is CSV.
+      
+        Example:
+          <action code="SaveAmpValues($fileName, $positionId)"/>    
+         
+          
+      ************************************************************************************* -->
+<function name="SaveAmpValues" inline="false">   
+    <param name="$ampFile"/>    
+    <param name="$positionID"/>
+
+    <log>Export Amplitude-Values</log>
+    
+    <pdm action="read" name="Test/Ats/AtsSoft/Amplitude-Values" type="short" return="$ampValues[]"/>
+    
+    <file name="script:$ampFile" action="append" terminator=",">script:$positionID</file>
+    <file name="script:$ampFile" action="append" separator="," terminator="\n" maxElements="256">script:$ampValues[]</file>
+
+  </function>
+
+	<!-- *************************************************************************************
+  
+        Center the RX graphs so screen capture will contain the relevant information
+        Last 2 parameters are bitfields in decimal for the graph modes
+        See ats-soft params in pdm window for details
+      
+        Example:
+          <action code="CenterRxGraphs($delayLength, $ElementSelected, $ElementSize, 
+						$ElementOrigin, $TimeSize, $graphMode, $profileGraphMode)"/>    
+         
+          
+      ************************************************************************************* -->
+	<function name="CenterRxGraphs" inline="false">
+		<param name="$delayLength"/>
+		<param name="$elementSelected"/>
+		<param name="$elementSize"/>
+		<param name="$elementOrigin"/>
+		<param name="$timeSize"/>
+		<param name="$graphMode"/>
+		<param name="$profileGraphMode"/>
+		
+		<log>Center RX graph</log>
+
+		<action code="changetype($delayLength, 'double')"/>
+		<action code="changetype($elementSelected, 'long')"/>
+		<action code="changetype($elementSize, 'double')"/>
+		<action code="changetype($elementOrigin, 'double')"/>
+		<action code="changetype($timeSize, 'double')"/>
+		<action code="changetype($graphMode, 'long')"/>
+		<action code="changetype($profileGraphMode, 'long')"/>
+
+	<!--ats action="centerRxGraphs" timeSize="script:$timeSize"/-->
+		<action code="assign($elementSelected, subtract($elementSelected,1))"/>
+		<pdm action="write" name="Test/Ats/AtsSoft/Element-Selected" type="ulong" base="10" bigEndian="false">script:$elementSelected</pdm>
+		<pdm action="write" name="Test/Ats/AtsSoft/Element-Size" type="double" base="10" bigEndian="false">script:$elementSize</pdm>
+		<pdm action="write" name="Test/Ats/AtsSoft/Element-Origin" type="double" base="10" bigEndian="false">script:$elementOrigin</pdm>
+		<pdm action="write" name="Test/Ats/AtsSoft/Graph-Mode" type="ulong" bigEndian="false" base="10">script:$graphMode</pdm>
+		<pdm action="write" name="Test/Ats/AtsSoft/Profile-Graph-Mode" type="ulong" bigEndian="false" base="10">script:$profileGraphMode</pdm>
+		
+		<pdm action="read" name="Test/Ats/AtsSoft/Peak-Height" type="double" return="$PeakHeight"/>
+		<action code = "assign($PeakHeight, multiply($PeakHeight,1.1))"/>
+		<pdm action="write" name="Test/Ats/AtsSoft/Peak-Height" type="double" base="10" bigEndian="false">script:$PeakHeight</pdm>	
+		
+	
+	<!-- Plotting for Continuous (no delay profile) Test Cases -->
+	<!-- Scaling factor = 2*Samples/TXF -->
+	<action code="assign($ScalingFactor,divide(1024.0,divide($_RXF,1000000.0)))"/> 
+	<action code="assign($timeLength, divide(multiply(divide(1000000000.0,$_TXF),12.0),$ScalingFactor))"/>	
+	<pdm action="write" name="Test/Ats/AtsSoft/Time-Length" type="double" base="10" bigEndian="false">script:$timeLength</pdm>
+	<pdm action="write" name="Test/Ats/AtsSoft/Time-Origin" type="double" base="10" bigEndian="false">0.0</pdm>
+	
+
+	<!-- Plotting for Non-Continous Test Cases -->	
+	<if test="$_NonCont">	
+		<pdm action="read" name="Test/Ats/AtsSoft/Samples" type="ulong" return="$Samples"/>
+		<action code="changetype($Samples,'double')"/>
+		<action code="assign($ScalingFactor,multiply(2.0,divide($Samples,divide($_RXF,1000000.0))))"/>
+		<if test="$_Quadx2">
+			<action code="assign($ScalingFactor,divide($Samples,divide($_RXF,1000000.0)))"/>
+		</if>			
+		
+		<action code="changetype($_TXFAwg,'double')"/>
+		<action code="assign($delayLength,multiply(multiply(divide(1.0,divide($_TXFAwg,1000.0)),$_numcycles),2.0))"/>
+		<pdm action="write" name="Test/Ats/AtsSoft/Delay-Length" type="double" base="10" bigEndian="false">script:$delayLength</pdm>	
+
+		<pdm action="read" name="Test/Ats/AtsSoft/Ideal-Delay-Values" type="float" return="$ideal[]"/>
+		<action code="assign($delayOrigin, subtract($ideal[$elementSelected], divide($delayLength, 2.0)))"/>
+		<pdm action="write" name="Test/Ats/AtsSoft/Delay-Origin" type="double" base="10" bigEndian="false">script:$delayOrigin</pdm>
+
+		<action code="assign($timeSize,divide(multiply($delayLength,2.0),$ScalingFactor))"/>
+		<action code="changetype($timeSize,'double')"/>
+		<action code="assign($timeOrigin,divide($delayOrigin,$ScalingFactor))"/>
+		<pdm action="write" name="Test/Ats/AtsSoft/Time-Length" type="double" base="10" bigEndian="false">script:$timeSize</pdm>	
+		<pdm action="write" name="Test/Ats/AtsSoft/Time-Origin" type="double" base="10" bigEndian="false">script:$timeOrigin</pdm>	
+
+	</if>	
+
+		<pdm action="write" name="Test/Ats/AtsSoft/Amplitude-Height" type="double" base="10" bigEndian="false">script:$PeakHeight</pdm>	
+		<action code="assign($AmplitudeOrigin, multiply(-1,divide($PeakHeight,2)))"/>
+		<pdm action="write" name="Test/Ats/AtsSoft/Amplitude-Origin" type="double" base="10" bigEndian="false">script:$AmplitudeOrigin</pdm>
+					
+		<pdm action="write" name="Test/Ats/AtsSoft/Update-Data-Graph" type="bool">TRUE</pdm>
+		<pdm action="write" name="Test/Ats/AtsSoft/Update-Delay-Graph" type="bool">TRUE</pdm>
+		<pdm action="write" name="Test/Ats/AtsSoft/Block-Data-Graph-Reset" type="bool">TRUE</pdm>
+		<pdm action="write" name="Test/Ats/AtsSoft/Block-Delay-Graph-Reset" type="bool">TRUE</pdm>
+	
+	</function>
+
+	<!-- *************************************************************************************
+  
+        Center the TX graphs so screen capture will contain the relevant information
+        Last 2 parameters are bitfields in decimal for the graph modes
+        See ats-soft params in pdm window for details
+      
+        Example:
+          <action code="CenterTxGraphs($delayLength, $ElementSelected, $ElementSize, 
+						$ElementOrigin, $TimeSize, $graphMode, $profileGraphMode)"/>    
+         
+          
+      ************************************************************************************* -->
+	<function name="CenterTxGraphs" inline="false">
+		<param name="$delayLength"/>
+		<param name="$elementSelected"/>
+		<param name="$elementSize"/>
+		<param name="$elementOrigin"/>
+		<param name="$timeSize"/>
+		<param name="$graphMode"/>
+		<param name="$profileGraphMode"/>
+
+		<log>Center TX graph</log>
+
+		<action code="changetype($delayLength, 'double')"/>
+		<action code="changetype($elementSelected, 'long')"/>
+		<action code="changetype($elementSize, 'double')"/>
+		<action code="changetype($elementOrigin, 'double')"/>
+		<action code="changetype($timeSize, 'double')"/>
+		<action code="changetype($graphMode, 'long')"/>
+		<action code="changetype($profileGraphMode, 'long')"/>
+
+	<action code="assign($elementSelected, subtract($elementSelected,1))"/>
+	<pdm action="write" name="Test/Ats/AtsSoft/Element-Selected" type="ulong" base="10" bigEndian="false">script:$elementSelected</pdm>
+	<pdm action="write" name="Test/Ats/AtsSoft/Element-Size" type="double" base="10" bigEndian="false">script:$elementSize</pdm>
+	<pdm action="write" name="Test/Ats/AtsSoft/Element-Origin" type="double" base="10" bigEndian="false">script:$elementOrigin</pdm>
+	<pdm action="write" name="Test/Ats/AtsSoft/Graph-Mode" type="ulong" bigEndian="false" base="10">script:$graphMode</pdm>
+	<pdm action="write" name="Test/Ats/AtsSoft/Profile-Graph-Mode" type="ulong" bigEndian="false" base="10">script:$profileGraphMode</pdm>
+
+
+	<!-- Plotting for Amp Test Cases -->
+	<pdm action="read" name="Test/Ats/AtsSoft/Delay-Values-GroupDelay" type="float" return="$ideal[]"/>
+	<action code="assign($timeOrigin,multiply(subtract($ideal[$elementSelected],250.0),2.0))"/>	
+	<pdm action="write" name="Test/Ats/AtsSoft/Time-Origin" type="double" base="10" bigEndian="false">script:$timeOrigin</pdm>
+	
+	<action code="assign($FrequencyLength,1250)"/>
+	<pdm action="write" name="Test/Ats/AtsSoft/Frequency-Length" type="double" base="10" bigEndian="false">script:$FrequencyLength</pdm>
+	
+	<!-- Plotting for Non-Continuous Test Cases -->
+	<action code="assign($ScalingFactor,0.5)"/>
+	<choose>
+	<when test="$_NonCont">
+		<pdm action="read" name="Test/Ats/AtsSoft/Ideal-Delay-Values" type="float" return="$ideal[]"/>
+		<action code="assign($timeOrigin,subtract($ideal[$elementSelected], divide($timeSize, 2.0)))"/>
+		<action code="assign($timeOrigin,divide($timeOrigin, $ScalingFactor))"/>
+		<action code="assign($timeSize,divide($timeSize, $ScalingFactor))"/>
+		<pdm action="write" name="Test/Ats/AtsSoft/Time-Origin" type="double" base="10" bigEndian="false">script:$timeOrigin</pdm>
+		<pdm action="write" name="Test/Ats/AtsSoft/Time-Length" type="double" base="10" bigEndian="false">script:$timeSize</pdm>
+			
+		<action code="assign($delayOrigin, subtract($ideal[$elementSelected], divide($delayLength, 2.0)))"/>
+		<pdm action="write" name="Test/Ats/AtsSoft/Delay-Origin" type="double" base="10" bigEndian="false">script:$delayOrigin</pdm>
+		<pdm action="write" name="Test/Ats/AtsSoft/Delay-Length" type="double" base="10" bigEndian="false">script:$delayLength</pdm>
+			
+		<action code="assign($DelayCalculation,1)"/>
+		<pdm action="write" name="Test/Ats/AtsSoft/Delay-Calculation" type="long" base="10" bigEndian="false">script:$DelayCalculation</pdm>
+
+		<action code="assign($FrequencyLength,2500)"/>
+		<pdm action="write" name="Test/Ats/AtsSoft/Frequency-Length" type="double" base="10" bigEndian="false">script:$FrequencyLength</pdm>
+	</when>
+	<otherwise>
+		<action code="assign($timeOrigin,0.0)"/>
+		<action code="assign($timeSize,divide($timeSize, $ScalingFactor))"/>
+		<pdm action="write" name="Test/Ats/AtsSoft/Time-Origin" type="double" base="10" bigEndian="false">script:$timeOrigin</pdm>
+		<pdm action="write" name="Test/Ats/AtsSoft/Time-Length" type="double" base="10" bigEndian="false">script:$timeSize</pdm>
+	</otherwise>
+	</choose>
+
+		<pdm action="read" name="Test/Ats/AtsSoft/Peak-Height" type="double" return="$PeakHeight"/>
+		<pdm action="write" name="Test/Ats/AtsSoft/Peak-Height" type="double" base="10" bigEndian="false">script:$PeakHeight</pdm>	
+		<pdm action="write" name="Test/Ats/AtsSoft/Amplitude-Height" type="double" base="10" bigEndian="false">script:$PeakHeight</pdm>	
+		<action code="assign($AmplitudeOrigin, multiply(-1,divide($PeakHeight,2)))"/>
+		<pdm action="write" name="Test/Ats/AtsSoft/Amplitude-Origin" type="double" base="10" bigEndian="false">script:$AmplitudeOrigin</pdm>
+		
+		<pdm action="write" name="Test/Ats/AtsSoft/Update-Data-Graph" type="bool">TRUE</pdm>
+		<pdm action="write" name="Test/Ats/AtsSoft/Update-Delay-Graph" type="bool">TRUE</pdm>
+		<pdm action="write" name="Test/Ats/AtsSoft/Block-Data-Graph-Reset" type="bool">TRUE</pdm>
+		<pdm action="write" name="Test/Ats/AtsSoft/Block-Delay-Graph-Reset" type="bool">TRUE</pdm>
+		
+	</function>
+	
+
+	<!-- *************************************************************************************
+  
+        Create a screen capture
+          
+      ************************************************************************************* -->
+	<function name="CaptureWindow" inline="false">
+		<param name="$windowTitle"/>
+		<param name="$file"/>
+
+  	<loop count="5">
+	<ui>
+		<capture type="window" windowTitle="script:$windowTitle" file="script:$file"/>
+	</ui>
+	</loop>
+
+	</function>
+
+</script>

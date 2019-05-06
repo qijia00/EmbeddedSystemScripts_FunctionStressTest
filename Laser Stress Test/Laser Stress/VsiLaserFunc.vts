@@ -1,0 +1,1005 @@
+<?xml version="1.0"?>
+
+<!-- *************************************************************************************
+  Functions for VsiLaserStressDurationTest.vts.
+
+  Rev 1.0 - 2012-Jan16 - Initial release created by Jia Qi
+  Rev 1.1 - 2012-Aug09 - Modified for 3 ports laser machine by Jia Qi
+************************************************************************************** -->
+
+<script>
+
+  <!-- *************************************************************************************
+
+    Detect the current acquisition mode (either in scan or pause scan)
+
+    Example:
+      <action code="=($cmode, AcqMode())"/>
+
+  ************************************************************************************** -->
+  <function name="AcqMode" inline="false" return="$cmode">
+
+    <!-- read current acquisition mode name -->
+    <!-- if do not assign $cmode here, then the scope of $cmode will be limited in the when statement -->
+    <action code="=($cmode, 'test')"/>
+    <pdm action="read" name="Acq/Mode/Settings/Mode" return="$check"/>
+    <choose>
+      <when test="equal($check, 1)">
+        <action code="=($cmode, 'BMode')"/>
+      </when>
+      <when test="equal($check, 2)">
+        <action code="=($cmode, 'PwMode')"/>
+      </when>
+      <when test="equal($check, 4)">
+        <action code="=($cmode, 'TissueMode')"/>
+      </when>
+      <when test="equal($check, 8)">
+        <action code="=($cmode, 'MMode')"/>
+      </when>
+      <when test="equal($check, 65536)">
+        <action code="=($cmode, 'AMMode')"/>
+      </when>
+      <when test="equal($check, 16)">
+        <action code="=($cmode, 'ColorMode')"/>
+      </when>
+      <when test="equal($check, 32)">
+        <action code="=($cmode, 'PowerMode')"/>
+      </when>
+      <when test="equal($check, 128)">
+        <action code="=($cmode, 'LCMode')"/>
+      </when>
+      <when test="equal($check, 256)">
+        <action code="=($cmode, 'NLCMode')"/>
+      </when>
+      <when test="equal($check, 131072)">
+        <action code="=($cmode, 'PaMode')"/>
+      </when>
+    </choose>
+  </function>
+
+  <!-- *************************************************************************************
+
+    Uncheck Max Cine Loop Size for Linear Contrast Mode, Nonlinear Contrast Mode or PA-Mode
+
+    Example:
+      <action code="CineLoopSize('Pa-Mode')"/>
+
+  ************************************************************************************** -->
+  <function name="CineLoopSize" inline="false">
+    <param name="$mode"/>
+
+    <action code="PauseScan()"/>
+    <!-- $path: Acq/$mode/Scan/Max-Frames -->
+    <action code="=($path, 'Acq/')"/>
+    <action code="+=($path, $mode)"/>
+    <action code="+=($path, '/Scan/Max-Frames')"/>
+    <pdm action="write" name="script:$path">false</pdm>
+    <sleep time="1000"/>
+  </function>
+
+  <!-- *************************************************************************************
+
+    Start Scanning in requested mode (frame type mode and no LC no NLC)
+
+    Example:
+      <action code="StartScan('PaMode')"/>
+
+  ************************************************************************************** -->
+  <function name="StartScan" inline="false">
+    <param name="$mode"/>
+
+    <!-- set 3D motor as initialized -->
+    <pdm action="write" name="App/Settings/Hardware/3D-Motor-State" base="10">3</pdm>
+    <sleep time="1000"/>
+    <!-- read current 3D Motor State -->
+    <pdm action="read" name="App/Settings/Hardware/3D-Motor-State" return="$check"/>
+    <!-- error log: FAIL! 3D motor is NOT initialized! -->
+    <if test="notequal($check, 3)">
+      <action code="=($logmsg, 'FAIL! 3D motor is NOT initialized!')"/>
+      <log level="error">script:$logmsg</log>
+    </if>
+
+    <!-- if not scan in $mode or in scan but $mode & $cmode not the same, then click the $mode key to start scan -->
+    <action code="=($cmode, AcqMode())"/>
+    <!-- current acquisition mode -->
+    <pdm action="read" name="App/Settings/System/State" return="$check"/>
+    <action code="=($checkActivated, bitwiseAnd($check, 1024))"/>
+    <!-- if the 10th checkbox Scanning is NOT checked OR in scan and $mode & $cmode not the same -->
+    <if test="or(equal($checkActivated, 0), and(equal($checkActivated, 1024), notequal($mode, $cmode)))">
+      <if test="and(notequal($mode, 'LCMode'), notequal($mode, 'NLCMode'), notequal($mode, 'MMode'), notequal($mode, 'AMMode'))">
+        <cmd code="script:$mode"/>
+      </if>
+    </if>
+
+    <!--wait 1 min or till scanning starts-->
+    <action code="=($flag, 'FAIL')"/>
+    <loop count="60">
+      <sleep time="1000"/>
+      <pdm action="read" name="App/Settings/System/State" return="$check"/>
+      <action code="=($checkActivated, bitwiseAnd($check, 1024))"/>
+      <if test="equal($checkActivated, 1024)">
+        <!-- if the 10th checkbox Scanning is checed -->
+        <action code="=($flag, 'PASS')"/>
+        <break/>
+      </if>
+    </loop>
+
+    <!-- read current acquisition mode and store the value to $cmode -->
+    <action code="=($cmode, AcqMode())"/>
+
+    <!-- error log: FAIL! Scanning does NOT start in xxx! -->
+    <if test="equal($flag, 'FAIL')">
+      <action code="=($logmsg, $flag)"/>
+      <action code="+=($logmsg, '! Scanning does NOT start in ')"/>
+      <action code="+=($logmsg, $mode)"/>
+      <action code="+=($logmsg, '! (Discard this failure for 3 ports laser)')"/>
+      <log level="error">script:$logmsg</log>
+    </if>
+
+    <!-- error log: FAIL! Scanning starts in WRONG mode: xxx! -->
+    <if test="and(equal($flag, 'PASS'), notequal($mode, $cmode))">
+      <action code="=($logmsg, 'FAIL! Scanning starts in WRONG mode: ')"/>
+      <action code="+=($logmsg, $cmode)"/>
+      <action code="+=($logmsg, '!')"/>
+      <log level="error">script:$logmsg</log>
+    </if>
+  </function>
+
+  <!-- *************************************************************************************
+
+    Pause Scanning
+
+    Example:
+      <action code="PauseScan()"/>
+
+  ************************************************************************************** -->
+  <function name="PauseScan" inline="false">
+
+    <!-- if in scanning, then click the mode key to pause scan -->
+    <pdm action="read" name="App/Settings/System/State" return="$check"/>
+    <action code="=($checkActivated, bitwiseAnd($check, 1024))"/>
+    <if test="equal($checkActivated, 1024)">
+      <!-- if the 10th checkbox Scanning is checed -->
+      <cmd code="Scan"/>
+    </if>
+
+    <!--wait 1 min or till scanning is paused-->
+    <action code="=($flag, 'FAIL')"/>
+    <loop count="60">
+      <sleep time="1000"/>
+      <pdm action="read" name="App/Settings/System/State" return="$check"/>
+      <action code="=($checkActivated, bitwiseAnd($check, 1024))"/>
+      <if test="equal($checkActivated, 0)">
+        <!-- if the 10th checkbox Scanning is NOT checed -->
+        <action code="=($flag, 'PASS')"/>
+        <break/>
+      </if>
+    </loop>
+
+    <!-- error log: FAIL! Scanning is NOT paused! -->
+    <if test="equal($flag, 'FAIL')">
+      <action code="=($logmsg, $flag)"/>
+      <action code="+=($logmsg, '! Scanning is NOT paused!')"/>
+      <log level="error">script:$logmsg</log>
+    </if>
+  </function>
+
+  <!-- *************************************************************************************
+
+    Start scanning in PA-Mode then pause
+
+    Example:
+      <action code="PauseScanInPA()"/>
+
+  ************************************************************************************** -->
+  <function name="PauseScanInPA" inline="false">
+
+    <!-- Start scanning in PA-Mode -->
+    <action code="StartScan('PaMode')"/>
+    <sleep time="15000"/>
+    <!-- Pause scanning in PA-Mode -->
+    <action code="PauseScan()"/>
+    <sleep time="1000"/>
+  </function>
+
+  <!-- *************************************************************************************
+
+    Enable Wavelength 1 to Wavelength 5 for PA-Mode
+
+    Example:
+      <action code="Enable5Wavelength()"/>
+
+  ************************************************************************************** -->
+  <function name="Enable5Wavelength" inline="false">
+
+    <pdm action="write" name="Acq/Pa-Mode/PaModeSoft/Wavelength-1-Enable">true</pdm>
+    <pdm action="write" name="Acq/Pa-Mode/PaModeSoft/Wavelength-2-Enable">true</pdm>
+    <pdm action="write" name="Acq/Pa-Mode/PaModeSoft/Wavelength-3-Enable">true</pdm>
+    <pdm action="write" name="Acq/Pa-Mode/PaModeSoft/Wavelength-4-Enable">true</pdm>
+    <pdm action="write" name="Acq/Pa-Mode/PaModeSoft/Wavelength-5-Enable">true</pdm>
+    <sleep time="1000"/>
+  </function>
+
+  <!-- *************************************************************************************
+
+    Detect PA sub-mode
+
+    Example:
+      <action code="assign($submode, PASubMode())"/>
+
+  ************************************************************************************** -->
+  <function name="PASubMode" inline="false" return="$ret">
+
+    <!-- Single 0, Oxy-Hemo 1, NanoStepper 2, Spectro 3 -->
+    <pdm action="read" name="Acq/Pa-Mode/PaModeSoft/Acquisition-Mode" return="$check"/>
+    <sleep time="1000"/>
+    <choose>
+      <when test="equal($check, 0)">
+        <action code="=($ret, 'Single')"/>
+      </when>
+      <when test="equal($check, 1)">
+        <action code="=($ret, 'Oxy-Hemo')"/>
+      </when>
+      <when test="equal($check, 2)">
+        <action code="=($ret, 'NanoStepper')"/>
+      </when>
+      <otherwise>
+        <action code="=($ret, 'Spectro')"/>
+      </otherwise>
+    </choose>
+  </function>
+
+  <!-- *************************************************************************************
+
+    Wavelength
+
+    Example:
+      <action code="Wavelength()"/>
+
+  ************************************************************************************** -->
+  <function name="Wavelength" inline="false">
+
+    <!-- for Single -->
+    <pdm action="read" name="Acq/Pa-Mode/PaModeSoft/Single-Wavelength" return="$single"/>
+    <!-- for NanoStepper -->
+    <pdm action="read" name="Acq/Pa-Mode/PaModeSoft/Wavelength-1" return="$nano1"/>
+    <pdm action="read" name="Acq/Pa-Mode/PaModeSoft/Wavelength-2" return="$nano2"/>
+    <pdm action="read" name="Acq/Pa-Mode/PaModeSoft/Wavelength-3" return="$nano3"/>
+    <pdm action="read" name="Acq/Pa-Mode/PaModeSoft/Wavelength-4" return="$nano4"/>
+    <pdm action="read" name="Acq/Pa-Mode/PaModeSoft/Wavelength-5" return="$nano5"/>
+    <!-- for Oxy-Hemo -->
+    <pdm action="read" name="Acq/Pa-Mode/PaModeSoft/Oxy-Wavelength-1" return="$oxy1"/>
+    <pdm action="read" name="Acq/Pa-Mode/PaModeSoft/Oxy-Wavelength-2" return="$oxy2"/>
+    <!-- for Spectro -->
+    <pdm action="read" name="Acq/Pa-Mode/PaModeSoft/Spectro-Start-Wavelength" return="$spectro1"/>
+    <pdm action="read" name="Acq/Pa-Mode/PaModeSoft/Spectro-Stop-Wavelength" return="$spectro2"/>
+    <pdm action="read" name="Acq/Pa-Mode/PaModeSoft/Spectro-Step-Wavelength" return="$spectro3"/>
+    <action code="assign($submode, PASubMode())"/>
+    <choose>
+      <when test="equal($submode, 'Single')">
+        <action code="=($logmsg, 'PA ')"/>
+        <action code="+=($logmsg, $submode)"/>
+        <action code="+=($logmsg, ' sub-mode: ')"/>
+        <action code="+=($logmsg, $single)"/>
+        <action code="+=($logmsg, 'nm.')"/>
+        <log>script:$logmsg</log>
+      </when>
+      <when test="equal($submode, 'NanoStepper')">
+        <action code="=($logmsg, 'PA ')"/>
+        <action code="+=($logmsg, $submode)"/>
+        <action code="+=($logmsg, ' sub-mode: ')"/>
+        <action code="+=($logmsg, $nano1)"/>
+        <action code="+=($logmsg, 'nm, ')"/>
+        <action code="+=($logmsg, $nano2)"/>
+        <action code="+=($logmsg, 'nm, ')"/>
+        <action code="+=($logmsg, $nano3)"/>
+        <action code="+=($logmsg, 'nm, ')"/>
+        <action code="+=($logmsg, $nano4)"/>
+        <action code="+=($logmsg, 'nm, and ')"/>
+        <action code="+=($logmsg, $nano5)"/>
+        <action code="+=($logmsg, 'nm.')"/>
+        <log>script:$logmsg</log>
+      </when>
+      <when test="equal($submode, 'Oxy-Hemo')">
+        <action code="=($logmsg, 'PA ')"/>
+        <action code="+=($logmsg, $submode)"/>
+        <action code="+=($logmsg, ' sub-mode: ')"/>
+        <action code="+=($logmsg, $oxy1)"/>
+        <action code="+=($logmsg, 'nm and ')"/>
+        <action code="+=($logmsg, $oxy2)"/>
+        <action code="+=($logmsg, 'nm.')"/>
+        <log>script:$logmsg</log>
+      </when>
+      <otherwise>
+        <action code="=($logmsg, 'PA ')"/>
+        <action code="+=($logmsg, $submode)"/>
+        <action code="+=($logmsg, ' sub-mode: ')"/>
+        <action code="+=($logmsg, $spectro1)"/>
+        <action code="+=($logmsg, 'nm to ')"/>
+        <action code="+=($logmsg, $spectro2)"/>
+        <action code="+=($logmsg, 'nm in step ')"/>
+        <action code="+=($logmsg, $spectro3)"/>
+        <action code="+=($logmsg, 'nm.')"/>
+        <log>script:$logmsg</log>
+      </otherwise>
+    </choose>
+  </function>
+
+  <!-- *************************************************************************************
+
+    Cine Store with Image Label
+
+    Example:
+      <action code="CineStorewithImageLabel('Image0')"/>
+
+  ************************************************************************************** -->
+  <function name="CineStorewithImageLabel" inline="false">
+    <param name="$label"/>
+
+    <!-- Cine Store by [Image Label]-->
+    <cmd code="ImageLabel"/>
+    <sleep time="1000"/>
+    <action code="=($imagelabel, '#Z')"/>
+    <action code="+=($imagelabel, $label)"/>
+    <ui>
+      <!-- Enter "$imagelabel" as the Image Label-->
+      <input key="script:$imagelabel"/>
+      <input key="#T1000"/>
+      <!-- wait 1 sec -->
+      <input key="#SE"/>
+      <!-- use Enter key to OK the "Image Label" window -->
+      <input key="#T1000"/>
+      <!-- wait 1 sec -->
+    </ui>
+    <sleep time="10000"/>
+  </function>
+
+  <!-- *************************************************************************************
+
+    Record Laser Serial Number (Opotek serial number)
+
+    Example:
+      <action code="LaserSerialNumber()"/>
+
+  ************************************************************************************** -->
+  <function name="LaserSerialNumber" inline="false">
+
+    <pdm action="read" name="Hardware/Control/HwLaserControl/PA-Laser-Serial-Number" return="$check"/>
+    <action code="=($logmsg, 'The Laser (Opotek) Serial Number is ')"/>
+    <action code="+=($logmsg, $check)"/>
+    <action code="+=($logmsg, '.')"/>
+    <log>script:$logmsg</log>
+  </function>
+
+  <!-- *************************************************************************************
+
+    Record Laser Shot Count
+
+    Example:
+      <action code="assign($countLS, LaserShotCountReading())"/>
+
+  ************************************************************************************** -->
+  <function name="LaserShotCountReading" inline="false" return="$ret">
+
+    <dcm action="read" name="Hardware/Control/HwLaserControl/PA-Laser-Shot-Count"/>
+    <pdm action="read" name="Hardware/Control/HwLaserControl/PA-Laser-Shot-Count" return="$check"/>
+    <action code="assign($ret, $check)"/>
+    <action code="=($logmsg, 'The Laser Shot Count is ')"/>
+    <action code="+=($logmsg, $check)"/>
+    <action code="+=($logmsg, '.')"/>
+    <log level="warning">script:$logmsg</log>
+  </function>
+
+  <!-- *************************************************************************************
+
+    Record Laser Voltage
+
+    Example:
+      <action code="LaserVoltageReading()"/>
+
+  ************************************************************************************** -->
+  <function name="LaserVoltageReading" inline="false">
+
+    <dcm action="read" name="Hardware/Control/HwLaserControl/PA-Laser-Voltage"/>
+    <pdm action="read" name="Hardware/Control/HwLaserControl/PA-Laser-Voltage" return="$check"/>
+    <action code="=($logmsg, 'The Laser Voltage is ')"/>
+    <action code="+=($logmsg, $check)"/>
+    <action code="+=($logmsg, 'V.')"/>
+    <log level="warning">script:$logmsg</log>
+  </function>
+
+  <!-- *************************************************************************************
+
+    Record Laser OPO and SHG Energy every time after Optimize Laser Energy
+
+    Example:
+      <action code="LaserEnergyReadings()"/>
+
+  ************************************************************************************** -->
+  <function name="LaserEnergyReadings" inline="false">
+
+    <pdm action="read" name="Hardware/Control/HwLaserControl/PA-Ophir-Opo-Energy-Average" return="$check"/>
+    <action code="=($logmsg, 'The HwLaserControl/PA-Ophir-Opo-Energy-Average is ')"/>
+    <action code="+=($logmsg, $check)"/>
+    <action code="+=($logmsg, 'mJ.')"/>
+    <log level="warning">script:$logmsg</log>
+    <pdm action="read" name="Hardware/Control/HwLaserControl/PA-Ophir-Opo-Energy-Measure" return="$check"/>
+    <action code="=($logmsg, 'The HwLaserControl/PA-Ophir-Opo-Energy-Measure is ')"/>
+    <action code="+=($logmsg, $check)"/>
+    <action code="+=($logmsg, 'mJ.')"/>
+    <log level="warning">script:$logmsg</log>
+    <pdm action="read" name="Hardware/Control/HwLaserControl/PA-Ophir-Shg-Energy-Average" return="$check"/>
+    <action code="=($logmsg, 'The HwLaserControl/PA-Ophir-Shg-Energy-Average is ')"/>
+    <action code="+=($logmsg, $check)"/>
+    <action code="+=($logmsg, 'mJ.')"/>
+    <log level="warning">script:$logmsg</log>
+    <pdm action="read" name="Hardware/Control/HwLaserControl/PA-Ophir-Shg-Energy-Measure" return="$check"/>
+    <action code="=($logmsg, 'The HwLaserControl/PA-Ophir-Shg-Energy-Measure is ')"/>
+    <action code="+=($logmsg, $check)"/>
+    <action code="+=($logmsg, 'mJ.')"/>
+    <log level="warning">script:$logmsg</log>
+  </function>
+
+  <!-- *************************************************************************************
+
+    Move the SHG motor position
+
+    Example:
+      <action code="MoveSHGMoter(2000)"/>
+
+  ************************************************************************************** -->
+  <function name="MoveSHGMoter" inline="false">
+    <param name="$target"/>
+
+    <pdm action="write" name="Hardware/Control/HwLaserControl/PA-Shg-Motor-Relative" base="10">script:$target</pdm>
+    <sleep time="1000"/>
+    <dcm action="write" name="Hardware/Control/HwLaserControl/PA-Shg-Motor-Relative"/>
+    <sleep time="1000"/>
+    <!-- Start scanning in PA-Mode then pause -->
+    <action code="PauseScanInPA()"/>
+  </function>
+
+  <!-- *************************************************************************************
+
+    When the "Energy Optimization" window pop up, Optimize
+    $ret <= 0: "Energy Optimization" window doesn't pop up
+    $ret > 0: "Energy Optimization" window popped up
+
+    Example:
+      <action code="EnergyOptimization()"/>
+
+  ************************************************************************************** -->
+  <function name="EnergyOptimization" inline="false">
+
+    <!-- Check if the "Energy Optimization" window pop up or not after pause scanning -->
+    <ui>
+      <window action="find" title="Energy Optimization" return="$checkO"/>
+    </ui>
+    <!-- If the "Energy Optimization" window pop up -->
+    <if test="notequal(0, $checkO)">
+      <action code="assign($_countO, abs($_countO))"/>
+      <action code="assign($_countO, add($_countO, 1))"/>
+      <log time="true">The "Energy Optimization" window popped up.</log>
+      <!-- Optimize -->
+      <ui>
+        <!-- active the Energy Optimization window -->
+        <input set="window" title="Energy Optimization"/>
+        <input key="#T1000"/>
+        <!-- wait 1 sec -->
+        <input key="#Ky"/>
+        <!-- OK the window -->
+        <input key="#T3000"/>
+        <!-- wait 3 sec -->
+      </ui>
+      <!-- Check every 10 sec to see if the Optimization is finished or not -->
+      <loop count="100" >
+        <ui>
+          <window action="find" title="Full Laser Energy Optimize" return="$check"/>
+        </ui>
+        <if test="notequal(0, $check)">
+          <!-- if window still there, wait longer -->
+          <sleep time="10000"/>
+          <!-- wait another 10 sec -->
+        </if>
+        <if test="equal(0, $check)">
+          <!-- if window is no longer there -->
+          <break/>
+        </if>
+      </loop>
+      <!-- Check if Energy Optimization Failed/Incomplete or not -->
+      <ui>
+        <window action="find" title="Energy Optimization Failed" return="$checkF"/>
+        <window action="find" title="Energy Optimization Incomplete" return="$checkI"/>
+      </ui>
+      <if test="and(equal(0, $checkF), equal(0, $checkI))">
+        <!-- if Energy Optimization succeed-->
+        <!-- Start scanning in PA-Mode then pause -->
+        <action code="PauseScanInPA()"/>
+        <!-- Record Laser OPO and SHG Energy every time after Optimize Laser Energy -->
+        <action code="LaserEnergyReadings()"/>
+      </if>
+    </if>
+    <!-- If the "Energy Optimization" window does NOT pop up -->
+    <if test="equal(0, $checkO)">
+      <action code="assign($_countO, abs($_countO))"/>
+      <action code="assign($_countO, multiply($_countO, -1))"/>
+    </if>
+  </function>
+
+  <!-- *************************************************************************************
+
+    Detect if the "Energy Optimization Failed/Incomplete" is popped up or not
+    $ret <= 0: "Energy Optimization Failed" window doesn't pop up
+    $ret > 0: "Energy Optimization Failed" window popped up
+
+    Example:
+      <action code="EnergyOptimizationFailed()"/>
+
+  ************************************************************************************** -->
+  <function name="EnergyOptimizationFailed" inline="false">
+
+    <!-- Check if the "Energy Optimization Failed/Incomplete" window pop up or not after optimization -->
+    <ui>
+      <window action="find" title="Energy Optimization Failed" return="$checkF"/>
+      <window action="find" title="Energy Optimization Incomplete" return="$checkI"/>
+    </ui>
+    <!-- If the "Energy Optimization Failed" window pop up -->
+    <if test="notequal(0, $checkF)">
+      <action code="assign($_countF, abs($_countF))"/>
+      <action code="assign($_countF, add($_countF, 1))"/>
+      <log level="error">FAIL! "Energy Optimization Failed" window popped up!</log>
+      <ui>
+        <input key="#SE"/>
+        <!-- use Enter key to OK the window -->
+      </ui>
+      <!-- Start scanning in PA-Mode then pause -->
+      <action code="PauseScanInPA()"/>
+    </if>
+    <!-- If the "Energy Optimization Incomplete" window pop up -->
+    <if test="notequal(0, $checkI)">
+      <action code="assign($_countF, abs($_countF))"/>
+      <action code="assign($_countF, add($_countF, 1))"/>
+      <log level="error">FAIL! "Energy Optimization Incomplete" window popped up!</log>
+      <ui>
+        <input key="#SE"/>
+        <!-- use Enter key to OK the window -->
+      </ui>
+      <!-- Start scanning in PA-Mode then pause -->
+      <action code="PauseScanInPA()"/>
+    </if>
+    <!-- If the "Energy Optimization Fail/Incomplete" window does NOT pop up -->
+    <if test="and(equal(0, $checkF), equal(0, $checkI))">
+      <action code="assign($_countF, abs($_countF))"/>
+      <action code="assign($_countF, multiply($_countF, -1))"/>
+    </if>
+  </function>
+
+  <!-- *************************************************************************************
+
+    Calculate the Optimization passing rate
+
+    Example:
+      <action code="PassRate()"/>
+
+  ************************************************************************************** -->
+  <function name="PassRate" inline="false">
+
+    <action code="assign($countO, abs($_countO))"/>
+    <action code="assign($countF, abs($_countF))"/>
+    <action code="assign($_PassRate, subtract($countO, $countF))"/>
+    <action code="changetype($_PassRate, 'float')"/>
+    <action code="assign($_PassRate, divide($_PassRate, $countO))"/>
+    <action code="assign($_PassRate, multiply($_PassRate, 100.0))"/>
+    <action code="=($logmsg, 'Total Optimized ')"/>
+    <action code="+=($logmsg, $countO)"/>
+    <action code="+=($logmsg, ' times, and Failed ')"/>
+    <action code="+=($logmsg, $countF)"/>
+    <action code="+=($logmsg, ' times.')"/>
+    <log>script:$logmsg</log>
+  </function>
+
+  <!-- *************************************************************************************
+
+    If optimization passing rate is lower than criteria, terminate the script
+
+    Example:
+      <action code="PassRateCriteria($criteria)"/>
+
+  ************************************************************************************** -->
+  <function name="PassRateCriteria" inline="false">
+    <param name="$criteria"/>
+
+    <if test="less($_PassRate, $criteria)">
+      <action code="=($logmsg, 'FAIL! The Optimization Passing Rate is ')"/>
+      <action code="+=($logmsg, $_PassRate)"/>
+      <action code="+=($logmsg, '% which is less than ')"/>
+      <action code="+=($logmsg, $criteria)"/>
+      <action code="+=($logmsg, '%!')"/>
+      <log level="error">script:$logmsg</log>
+      <break/>
+    </if>
+    <if test="or(greater($_PassRate, $criteria), equal($_PassRate, $criteria))">
+      <action code="=($logmsg, 'The current Optimization Passing Rate is ')"/>
+      <action code="+=($logmsg, $_PassRate)"/>
+      <action code="+=($logmsg, '%.')"/>
+      <log>script:$logmsg</log>
+    </if>
+  </function>
+
+  <!-- *************************************************************************************
+
+    OptimizationDuringPreparation
+
+    Example:
+      <action code="OptimizationDuringPreparation($criteria)"/>
+
+  ************************************************************************************** -->
+  <function name="OptimizationDuringPreparation" inline="false">
+    <param name="$criteria"/>
+
+    <!-- Detect if the "Energy Optimization" window pop up or not after pause scanning -->
+    <action code="EnergyOptimization()"/>
+    <!-- If the "Energy Optimization" window popped up -->
+    <if test="greater($_countO, 0)">
+      <!-- Detect if the "Energy Optimization Failed/Incomplete" popped up or not after optimization -->
+      <action code="EnergyOptimizationFailed()"/>
+      <!-- If the "Energy Optimization Failed/Incomplete" popped up -->
+      <if test="greater($_countF, 0)">
+        <log level="error">The Script is terminated during PREPARATION since the optimization is failed!</log>
+        <!-- Change optimization passing rate to 0 -->
+        <action code="assign($_PassRate, 0.0)"/>
+        <!-- Generate Report -->
+        <action code="Report()"/>
+        <exit/>
+      </if>
+      <!-- if the "Energy Optimization Failed/Incomplete" window does NOT pop up -->
+      <!-- Calculate Optimization passing rate -->
+      <action code="PassRate()"/>
+      <action code="PassRateCriteria($criteria)"/>
+    </if>
+    <!-- If the "Energy Optimization" window does NOT pop up -->
+    <if test="or(less($_countO, 0), equal($_countO, 0))">
+      <log level="error">The Script is terminated during PREPARATION since the "Energy Optimization" window does NOT pop up!</log>
+      <!-- Change optimization passing rate to 0 -->
+      <action code="assign($_PassRate, 0.0)"/>
+      <!-- Generate Report -->
+      <action code="Report()"/>
+      <exit/>
+    </if>
+  </function>
+
+  <!-- *************************************************************************************
+
+    OptimizationDuringPAsubmodesRotateScan
+
+    Example:
+      <action code="OptimizationDuringPAsubmodesRotateScan($criteria)"/>
+
+  ************************************************************************************** -->
+  <function name="OptimizationDuringPAsubmodesRotateScan" inline="false">
+    <param name="$criteria"/>
+
+    <loop count="100">
+      <!-- Detect if the "Energy Optimization" window pop up or not after pause scanning -->
+      <action code=" EnergyOptimization()"/>
+      <!-- If the "Energy Optimization" window popped up -->
+      <if test="greater($_countO, 0)">
+        <!-- Detect if the "Energy Optimization Failed/Incomplete" popped up or not after optimization -->
+        <action code="EnergyOptimizationFailed()"/>
+        <!-- If the "Energy Optimization Failed/Incomplete" popped up -->
+        <if test="greater($_countF, 0)">
+          <!-- Calculate Optimization passing rate -->
+          <action code="PassRate()"/>
+          <action code="PassRateCriteria($criteria)"/>
+          <if test="or(greater($_PassRate, $criteria), equal($_PassRate, $criteria))">
+            <!-- Detect if the "Energy Optimization" window pop up or not after pause scanning -->
+            <action code="EnergyOptimization()"/>
+          </if>
+          <!-- If optimization passing rate is lower than criteria, terminate the script -->
+          <if test="less($_PassRate, $criteria)">
+            <log level="error">The Script is terminated during PA Rotated Submodes Scanning due to the above reason!</log>
+            <!-- Generate Report -->
+            <action code="Report()"/>
+            <exit/>
+          </if>
+        </if>
+        <!-- if the "Energy Optimization Failed/Incomplete" window does NOT pop up -->
+        <if test="or(less($_countF, 0), equal($_countF, 0))">
+          <!-- Calculate Optimization passing rate -->
+          <action code="PassRate()"/>
+          <action code="PassRateCriteria($criteria)"/>
+          <break/>
+        </if>
+      </if>
+      <!-- If the "Energy Optimization" window does NOT pop up -->
+      <if test="or(less($_countO, 0), equal($_countO, 0))">
+        <break/>
+      </if>
+    </loop>
+  </function>
+
+  <!-- *************************************************************************************
+
+    OptimizationAfterDetuning
+
+    Example:
+      <action code="OptimizationAfterDetuning($criteria)"/>
+
+  ************************************************************************************** -->
+  <function name="OptimizationAfterDetuning" inline="false">
+    <param name="$criteria"/>
+
+    <loop count="100">
+      <!-- If the "Energy Optimization" window popped up -->
+      <if test="greater($_countO, 0)">
+        <!-- Detect if the "Energy Optimization Failed/Incomplete" popped up or not after optimization -->
+        <action code="EnergyOptimizationFailed()"/>
+        <!-- If the "Energy Optimization Failed/Incomplete" popped up -->
+        <if test="greater($_countF, 0)">
+          <!-- Calculate Optimization passing rate -->
+          <action code="PassRate()"/>
+          <action code="PassRateCriteria($criteria)"/>
+          <if test="or(greater($_PassRate, $criteria), equal($_PassRate, $criteria))">
+            <!-- Detect if the "Energy Optimization" window pop up or not after pause scanning -->
+            <action code="EnergyOptimization()"/>
+          </if>
+          <!-- If optimization passing rate is lower than criteria, terminate the script -->
+          <if test="less($_PassRate, $criteria)">
+            <log level="error">The Script is terminated after DETUNING due to the above reason!</log>
+            <!-- Generate Report -->
+            <action code="Report()"/>
+            <exit/>
+          </if>
+        </if>
+        <!-- if the "Energy Optimization Failed/Incomplete" window does NOT pop up -->
+        <if test="or(less($_countF, 0), equal($_countF, 0))">
+          <!-- Calculate Optimization passing rate -->
+          <action code="PassRate()"/>
+          <action code="PassRateCriteria($criteria)"/>
+          <break/>
+        </if>
+      </if>
+      <!-- If the "Energy Optimization" window does NOT pop up -->
+      <if test="or(less($_countO, 0), equal($_countO, 0))">
+        <break/>
+      </if>
+    </loop>
+  </function>
+
+  <!-- *************************************************************************************
+
+    Rotate Scanning in PA Single, Nanostepper, Oxy-Hemo and Spectro sub modes
+
+    Example:
+      <action code="PAsubmodesRotateScan(60, 0.9)"/> - for VsiLaserStressTest_mfg1
+      <action code="PAsubmodesRotateScan(5, 0.95)"/> - for VsiLaserStressTest_mfg2
+      <action code="PAsubmodesRotateScan(5, 0.95)"/> - for VsiLaserStressTest_service1
+
+  ************************************************************************************** -->
+  <function name="PAsubmodesRotateScan" inline="false">
+    <param name="$AcquisitionLength"/>
+    <param name="$criteria"/>
+
+    <action code="=($spectro, 'N')"/>
+    <!-- if Spectro submode or not-->
+    <action code="=($checkScan, 0)"/>
+    <!-- for Spectro submode -->
+    <loop count="4">
+      <!-- each loop is one scan, there are 4 submodes -->
+      <!-- Label "Image#:" in the script result -->
+      <action code="=($_countPA, add($_countPA, 1))"/>
+      <action code="=($logmsg, 'Image')"/>
+      <action code="+=($logmsg, $_countPA)"/>
+      <action code="+=($logmsg, ':')"/>
+      <log time="true">script:$logmsg</log>
+      <!-- Start scanning in PA-Mode -->
+      <cmd code="PaMode"/>
+      <sleep time="7000"/>
+      <!-- Select "PA Acquisition" ScreenKey selection -->
+      <cmd code="ScreenKeyRight"/>
+      <sleep time="1000"/>
+      <cmd code="ScreenKeySelect"/>
+      <sleep time="1000"/>
+      <!-- If the previous sub mode is NOT "Spectro", select a different PA sub mode -->
+      <if test="notequal($spectro, 'Y')">
+        <cmd code="ScreenKeyRight"/>
+        <sleep time="1000"/>
+        <cmd code="ScreenKeySelect"/>
+        <sleep time="1000"/>
+      </if>
+      <!-- If the previous sub mode is "Spectro", stay scanning in "Single" sub mode -->
+      <if test="equal($spectro, 'Y')">
+        <action code="=($spectro, 'N')"/>
+      </if>
+      <!-- Check the "Spectro Acquisition Setup" window -->
+      <ui>
+        <window action="find" title="Spectro Acquisition Setup" return="$check"/>
+      </ui>
+      <!-- If the "Spectro Acquisition Setup" window pop up -->
+      <if test="notequal(0, $check)">
+        <log>If the "Energy Optimization" window pop up after "Spectro" acquisition, the saved image will be "Single".</log>
+        <action code="=($spectro, 'Y')"/>
+        <ui>
+          <input key="#SE"/>
+          <!-- use Enter key to OK the "Spectro Acquisition Setup" window -->
+          <input key="#T1000"/>
+          <!-- wait 1 sec -->
+
+        </ui>
+      </if>
+      <!-- output submode name and wavelengths -->
+      <action code="Wavelength()"/>
+      <!-- Scanning 3*$AcquisitionLength/60 minutes for non-Spectro sub mode or scanning till Spectro sub mode is paused -->
+      <loop count="script:$AcquisitionLength">
+        <sleep time="3000"/>
+        <!-- For Spectro sub mode, break out of the loop once the scanning is done -->
+        <pdm action="read" name="App/Settings/System/State" type="long" return="$check"/>
+        <action code="=($checkScan, bitwiseAnd($check, 1024))"/>
+        <if test="less($checkScan, 1024)">
+          <!-- Scanning bit is disabled -->
+          <break/>
+          <!-- for Spectro sub mode -->
+        </if>
+      </loop>
+      <!-- For non-Spectro sub mode, manually pause scanning after 3*$AcquisitionLength/60 minutes -->
+      <if test="greater($checkScan, 0)">
+        <!-- Scanning bit is enabled -->
+        <!-- Pause scanning in PA-Mode -->
+        <cmd code="Scan"/>
+        <sleep time="3000"/>
+      </if>
+
+      <!-- Record Laser OPO and SHG Energy every time after acquire each cine loop -->
+      <action code="LaserEnergyReadings()"/>
+
+      <!-- Check if the "Energy Optimization" window pop up or not after acquire each cine loop-->
+      <action code="OptimizationDuringPAsubmodesRotateScan($criteria)"/>
+
+      <!-- No matter the "Energy Optimization" window pop up or not, save the PA cine loop-->
+      <action code="=($imagelabel, 'Image')"/>
+      <action code="+=($imagelabel, $_countPA)"/>
+      <action code="CineStorewithImageLabel($imagelabel)"/>
+    </loop>
+  </function>
+
+  <!-- *************************************************************************************
+
+    2 hours cycle
+
+    Example:
+      <action code="TwoHoursCycle(60, 8, 0.9, -2000)"/> - for VsiLaserStressTest_mfg1
+      <action code="TwoHoursCycle(5, 20, 0.95, -2000)"/> - for VsiLaserStressTest_mfg2
+      <action code="TwoHoursCycle(5, 10, 0.95, -2000)"/> - for VsiLaserStressTest_service1
+
+  ************************************************************************************** -->
+  <function name="TwoHoursCycle" inline="false">
+    <param name="$AcquisitionLength"/>
+    <param name="$LoopCount"/>
+    <param name="$criteria"/>
+    <param name="$DetuningStep"/>
+
+    <!-- for VsiLaserStressTest_mfg1: 2 hours (15min/loop, 4loops/hour) -->
+    <!-- for VsiLaserStressTest_mfg2&service1: 2 hours (6min/loop, 10loops/hour) -->
+    <loop count="script:$LoopCount">
+      <!-- Rotate Scanning in PA Single, Nanostepper, Oxy-Hemo and Spectro sub modes -->
+      <action code="PAsubmodesRotateScan($AcquisitionLength, $criteria)"/>
+
+      <!-- Detuning the laser -->
+      <loop count="10">
+        <!-- Detuning the laser by $DetuningStep steps each time -->
+        <action code="MoveSHGMoter($DetuningStep)"/>
+        <!-- If the "Energy Optimization" window pop up after pause scanning, Optimize -->
+        <action code="EnergyOptimization()"/>
+        <if test="greater($_countO, 0)">
+          <!-- if the "Energy Optimization" window popped up -->
+          <break/>
+        </if>
+      </loop>
+      <!-- if the "Energy Optimization" window doesn't popped up after 10 detunings -->
+      <if test="or(less($_countO, 0), equal($_countO, 0))">
+        <action code="=($logmsg, 'FAIL! The Energy Optimization window does NOT popped up after 10 times ')"/>
+        <action code="+=($logmsg, $DetuningStep)"/>
+        <action code="+=($logmsg, ' steps detunnings!')"/>
+        <log level="error">script:$logmsg</log>
+        <log level="error">The Script is terminated after DETUNING due to the above reason!</log>
+        <!-- Generate Report -->
+        <action code="Report()"/>
+        <exit/>
+      </if>
+
+      <!-- Optimize the laser -->
+      <action code="OptimizationAfterDetuning($criteria)"/>
+    </loop>
+  </function>
+
+  <!-- *************************************************************************************
+
+                Display Time
+
+    Example:
+      <action code="assign($difft, Time($difft))"/>
+
+  ************************************************************************************** -->
+  <function name="Time" inline="false" return="$ret">
+    <param name="$time"/>
+
+    <!-- subtract 2 $sysDateTime, the result is in ms -->
+    <action code="assign($time, divide($time, 1000.0))"/>
+    <!-- unit second -->
+    <action code="assign($time, divide($time, 60.0))"/>
+    <!-- unit minute -->
+
+    <!-- shorten the decimal places -->
+    <action code="assign($time, multiply($time, 100.0))"/>
+    <action code="changetype($time, 'long')"/>
+    <action code="changetype($time, 'float')"/>
+    <action code="assign($ret, divide($time, 100.0))"/>
+  </function>
+
+  <!-- *************************************************************************************
+
+                Report
+
+    Example:
+      <action code="Report()"/>
+
+  ************************************************************************************** -->
+  <function name="Report" inline="false">
+
+    <log> </log>
+    <log>==================================================================</log>
+    <log>Report:</log>
+    <!-- Record Laser Serial Number -->
+    <action code="LaserSerialNumber()"/>
+    <!-- Record Script Finish Time -->
+    <action code="assign($finishDateTime, $sysDateTime)"/>
+    <action code="assign($difft, subtract($finishDateTime, $_beginDateTime))"/>
+    <!-- $difft type double unit ms-->
+    <action code="assign($difft, Time($difft))"/>
+    <action code="=($logmsg, 'The script began from ')"/>
+    <action code="+=($logmsg, $_beginDateTime)"/>
+    <action code="+=($logmsg, ' and finished at ')"/>
+    <action code="+=($logmsg, $finishDateTime)"/>
+    <action code="+=($logmsg, ' (')"/>
+    <action code="+=($logmsg, $difft)"/>
+    <action code="+=($logmsg, ' minutes in total).')"/>
+    <log>script:$logmsg</log>
+    <!-- Record Laser Shot Count at the end of the script -->
+    <dcm action="read" name="Hardware/Control/HwLaserControl/PA-Laser-Shot-Count"/>
+    <pdm action="read" name="Hardware/Control/HwLaserControl/PA-Laser-Shot-Count" return="$check"/>
+    <action code="assign($_countLSf, $check)"/>
+    <action code="assign($diff, subtract($_countLSf, $_countLSb))"/>
+    <action code="=($logmsg, 'The Laser Shot Count increased from ')"/>
+    <action code="+=($logmsg, $_countLSb)"/>
+    <action code="+=($logmsg, ' to ')"/>
+    <action code="+=($logmsg, $_countLSf)"/>
+    <action code="+=($logmsg, ' (increased ')"/>
+    <action code="+=($logmsg, $diff)"/>
+    <action code="+=($logmsg, ' in total).')"/>
+    <log>script:$logmsg</log>
+    <action code="assign($countPA, add($_countPA, 1))"/>
+    <action code="=($logmsg, '')"/>
+    <action code="+=($logmsg, $countPA)"/>
+    <action code="+=($logmsg, ' PA-Mode cine loops (different sub-modes) were saved.')"/>
+    <log>script:$logmsg</log>
+    <action code="assign($countO, abs($_countO))"/>
+    <action code="assign($countF, abs($_countF))"/>
+    <action code="=($logmsg, 'Total Optimized ')"/>
+    <action code="+=($logmsg, $countO)"/>
+    <action code="+=($logmsg, ' times, and Failed ')"/>
+    <action code="+=($logmsg, $countF)"/>
+    <action code="+=($logmsg, ' times.')"/>
+    <log>script:$logmsg</log>
+    <action code="=($logmsg, 'The Optimization Passing Rate is ')"/>
+    <action code="+=($logmsg, $_PassRate)"/>
+    <action code="+=($logmsg, '%.')"/>
+    <log>script:$logmsg</log>
+    <log>==================================================================</log>
+    <log> </log>
+  </function>
+</script>
+
+
+
+
+

@@ -1,0 +1,640 @@
+<?xml version="1.0"?>
+<script>
+
+  <!-- *************************************************************************************
+
+        Disables Scan State
+
+        Example:
+          <action code="DisableScanFlag()"/>
+
+      ************************************************************************************* -->
+  <function name="DisableScanFlag" inline="false">
+
+    <log>Triggers off</log>
+    <pdm action="write" name="Hardware/Control/HwTimingGen/Scan-Control">00000030</pdm>
+    <dcm action="write" name="Hardware/Control/HwTimingGen/Scan-Control"/>
+
+  </function>
+
+  <!-- *************************************************************************************
+
+    Sets the scan state for doppler triggers
+
+    Example:
+      <action code="SetDopplerScanFlag()"/>
+
+  ************************************************************************************* -->
+  <function name="SetDopplerScanFlag" inline="false">
+
+    <log>Doppler PRF triggers on</log>
+    <pdm action="write" name="Hardware/Control/HwTimingGen/Scan-Control">00000330</pdm>
+    <dcm action="write" name="Hardware/Control/HwTimingGen/Scan-Control"/>
+
+  </function>
+
+  <!-- *************************************************************************************
+
+    Sets the doppler computer trigger state used to setup for computer triggers
+
+    Example:
+      <action code="SetBModeTriggerFlag()"/>
+
+  ************************************************************************************* -->
+  <function name="SetBModeTriggerFlag" inline="false">
+
+    <log>B-Mode computer triggers on</log>
+    <pdm action="write" name="Hardware/Control/HwTimingGen/Scan-Control">00000110</pdm>
+    <dcm action="write" name="Hardware/Control/HwTimingGen/Scan-Control"/>
+
+  </function>
+
+  <!-- *************************************************************************************
+
+    Sets the external computer trigger state used to setup for computer triggers
+
+    Example:
+      <action code="SetDopplerExternalTrigger()"/>
+
+
+  ************************************************************************************* -->
+  <function name="SetDopplerExternalTrigger" inline="false">
+
+    <log>Doppler external triggers on</log>
+    <pdm action="write" name="Hardware/Control/HwTimingGen/Scan-Control">00000530</pdm>
+    <dcm action="write" name="Hardware/Control/HwTimingGen/Scan-Control"/>
+
+  </function>
+
+  <!-- *************************************************************************************
+
+    Sets the external computer trigger state used to setup for computer triggers
+
+    Example:
+      <action code="SetBModeExternalTrigger()"/>
+
+
+  ************************************************************************************* -->
+  <function name="SetBModeExternalTrigger" inline="false">
+
+    <log>B-Mode external triggers on</log>
+    <pdm action="write" name="Hardware/Control/HwTimingGen/Scan-Control">00000510</pdm>
+    <dcm action="write" name="Hardware/Control/HwTimingGen/Scan-Control"/>
+
+  </function>
+
+  <!-- *************************************************************************************
+
+        Sends a computer trigger
+
+        Example:
+          <action code="ComputerTrigger()"/>
+
+      ************************************************************************************* -->
+  <function name="ComputerTrigger" inline="false">
+
+    <!-- This is a computer sol trigger - auto reset-->
+    <pdm action="write" name="Hardware/Control/HwTimingGen/Cmp-Trig">00000001</pdm>
+    <dcm action="write" name="Hardware/Control/HwTimingGen/Cmp-Trig"/>
+
+  </function>
+
+  <!-- *************************************************************************************
+
+        Resets TX sequence and loads values
+
+        Example:
+          <action code="ResetTxRxSequence()"/>
+
+      ************************************************************************************* -->
+  <function name="ResetTxRxSequence" inline="false">
+
+    <log>Reset TX sequence (TX Init-Load)</log>
+    <pdm action="write" name="Hardware/Tx/HwTxCbCommon/Init-Load">FFFFFFFF</pdm>
+    <dcm action="write" name="Hardware/Tx/HwTxCbCommon/Init-Load"/>
+
+    <log>Reset RX sequence (RX Init-Load)</log>
+    <pdm action="write" name="Hardware/Rx/HwRxCbCommon/Init-Load">FFFFFFFF</pdm>
+    <dcm action="write" name="Hardware/Rx/HwRxCbCommon/Init-Load"/>
+
+  </function>
+
+  <!-- *************************************************************************************
+
+        Resets TX/RX sync 
+
+        Example:
+          <action code="ResetTxRxSync()"/>
+
+      ************************************************************************************* -->
+  <function name="ResetTxRxSync" inline="false">
+
+    <log>Reset sync</log>
+    <pdm action="write" name="Hardware/Control/HwClockControl/Doppler-Pll-Control">0000A808</pdm>
+    <dcm action="write" name="Hardware/Control/HwClockControl/Doppler-Pll-Control"/>
+
+    <sleep time="15"/>
+
+    <pdm action="write" name="Hardware/Control/HwClockControl/Mux-Control">0000000C</pdm>
+    <dcm action="write" name="Hardware/Control/HwClockControl/Mux-Control"/>
+
+    <pdm action="write" name="Hardware/Control/HwTimingGen/Tx-Rx-Sync">00040000</pdm>
+    <dcm action="write" name="Hardware/Control/HwTimingGen/Tx-Rx-Sync"/>
+
+    <sleep time="15"/>
+
+    <pdm action="write" name="Hardware/Control/HwTimingGen/Tx-Rx-Sync">00000000</pdm>
+    <dcm action="write" name="Hardware/Control/HwTimingGen/Tx-Rx-Sync"/>
+
+  </function>
+
+
+  <!-- *************************************************************************************
+
+  Sends the binary values for the image config to firmware for mode setup.
+  Different versions for different configurations
+
+    VsiImageConfig_t msgHeader;
+
+    msgHeader.iMode = _byteswap_ulong(VSI_MODE_RF_MODE);
+    msgHeader.iSamplePerLine = _byteswap_ulong(parameter);
+    msgHeader.iLinePerFrame = _byteswap_ulong(1);
+    msgHeader.iFrames = _byteswap_ulong(1);
+    msgHeader.iFrameRate = _byteswap_ulong(0);
+    msgHeader.iEnsembleSize = _byteswap_ulong(0);
+    msgHeader.iBlockSize = _byteswap_ulong(0);
+	  msgHeader.iSendIQ = _byteswap_ulong(0);
+
+    VsiImageRunMode_t msgHeader;
+
+    msgHeader.iRunMode = _byteswap_ulong(VSI_IMAGE_ARM);
+    msgHeader.iSyncType = _byteswap_ulong(0);
+    msgHeader.iFramesPerSec = _byteswap_ulong(10);
+
+  Example:
+    <action code="SendImageConfig_RF_1L(512)"/>   
+
+  ************************************************************************************* -->
+
+  <function name="SendImageConfig_RF_1L" inline="false">
+    <param name="$acqSamples"/>
+
+    <action code="assign($logmsg,'Send image config for rf with samples =  ')"/>
+    <action code="assign($logmsg,add($logmsg, $acqSamples))"/>
+    <log>script:$logmsg</log>
+
+    <pdm action="write" name="Hardware/Control/HwImageAcq/Run-Mode">0000000000000000</pdm>
+    <dcm action="write" name="Hardware/Control/HwImageAcq/Run-Mode"/>
+
+    <!--Generate image config-->
+    <action code="setlength($imageConfig[], 9)"/>
+    <action code="changetype($imageConfig[], 'ulong')"/>
+    <action code="assign($imageConfig[0], byteswapulong(2))"/>
+    <action code="assign($imageConfig[1], byteswapulong($acqSamples))"/>
+    <action code="assign($imageConfig[2], byteswapulong(1))"/>
+    <action code="assign($imageConfig[3], byteswapulong(1))"/>
+    <action code="assign($imageConfig[4], byteswapulong(1))"/>
+    <action code="assign($imageConfig[5], byteswapulong(0))"/>
+    <action code="assign($imageConfig[6], byteswapulong(0))"/>
+    <action code="assign($imageConfig[7], byteswapulong(0))"/>
+    <action code="assign($imageConfig[8], byteswapulong(0))"/>
+    <pdm action="write" name="Hardware/Control/HwImageAcq/Image-Config-Mode0" type="ulong">script:$imageConfig[]</pdm>
+    <dcm action="write" name="Hardware/Control/HwImageAcq/Image-Config-Mode0"/>
+
+    <pdm action="write" name="Hardware/Control/HwImageAcq/Run-Mode">0000000200000000</pdm>
+    <dcm action="write" name="Hardware/Control/HwImageAcq/Run-Mode"/>
+
+    <!-- Set watermark sizes -->
+    <!-- Data-Acq-Size is 4 words more than watermark to account for header -->
+    <action code="assign($dataAcqSize,add($acqSamples, 4))"/>
+    <action code="assign($dataAcqSize,$acqSamples)"/>
+    <action code="assign($acqSamples, byteswapulong($acqSamples))"/>
+    <action code="assign($dataAcqSize, byteswapulong($dataAcqSize))"/>
+    <pdm action="write" name="Hardware/Control/HwImageAcq/Data-Acq-Size" type="ulong">script:$dataAcqSize[]</pdm>
+    <pdm action="write" name="Hardware/Control/HwImageAcq/Fifo-Watermark" type="ulong">script:$acqSamples[]</pdm>
+
+    <!-- Set watermark sizes -->
+    <!-- Watermark is 4 words more than acqSamples to account for header -->
+    <!-- Note: This will generate a firmware warning since it is not aligned for PCI -->
+    <!-- Data-Acq-Size is 64 words more than acqSamples to account for header -->
+    <!-- Data-Acq-Size must be PCI aligned (256 byte) -->
+    <!-- This will cause lost sync messages from firmware but received data will be ok -->
+    <!-- <action code="assign($dataAcqSize,add($acqSamples, 64))"/> -->
+    <!-- taken out, crashes firmware! -->
+    <!-- <action code="assign($acqSamples, byteswapulong($acqSamples))"/>
+    <action code="assign($dataAcqSize, byteswapulong($dataAcqSize))"/>
+    <pdm action="write" name="Hardware/Control/HwImageAcq/Data-Acq-Size" type="ulong">script:$dataAcqSize[]</pdm>
+    <action code="assign($dataAcqSize,add($acqSamples, 4))"/>
+    <action code="assign($dataAcqSize, byteswapulong($dataAcqSize))"/>
+    <pdm action="write" name="Hardware/Control/HwImageAcq/Fifo-Watermark" type="ulong">script:$dataAcqSize[]</pdm>
+    -->
+    <!--Send watermark-->
+    <dcm action="write" name="Hardware/Control/HwImageAcq/Data-Acq-Size"/>
+    <dcm action="write" name="Hardware/Control/HwImageAcq/Fifo-Watermark"/>
+
+  </function>
+
+  <!-- *************************************************************************************
+
+  Sends the binary values for the image config to firmware for mode setup.
+  Different versions for different configurations
+
+    VsiImageConfig_t msgHeader;
+
+    msgHeader.iMode = _byteswap_ulong(VSI_MODE_CFI_MODE);
+    msgHeader.iSamplePerLine = _byteswap_ulong(acqSamples);
+    msgHeader.iLinePerFrame = _byteswap_ulong(acqLines);
+    msgHeader.iFrames = _byteswap_ulong(50);
+    msgHeader.iFocalZones = _byteswap_ulong(1);
+    msgHeader.iFrameRate = _byteswap_ulong(0);
+    msgHeader.iEnsembleSize = _byteswap_ulong(acqEnsemble);
+    msgHeader.iBlockSize = _byteswap_ulong(0);
+	  msgHeader.iSendIQ = _byteswap_ulong(0);
+
+    VsiImageRunMode_t msgHeader;
+
+    msgHeader.iRunMode = _byteswap_ulong(VSI_IMAGE_ARM);
+    msgHeader.iSyncType = _byteswap_ulong(0);
+    msgHeader.iFramesPerSec = _byteswap_ulong(10);
+
+  Example:
+    <action code="SendImageConfig_CF(512,512,32,10)"/>   
+
+  ************************************************************************************* -->
+
+  <function name="SendImageConfig_CF" inline="false">
+    <param name="$acqSamples"/>
+    <param name="$acqLines"/>
+    <param name="$acqEnsemble"/>
+    <param name="$acqBlockSize"/>
+
+    <action code="assign($logmsg,'Send image config for cf1 with samples =  ')"/>
+    <action code="assign($logmsg,add($logmsg, $acqSamples))"/>
+    <action code="assign($logmsg,add($logmsg, ' lines = '))"/>
+    <action code="assign($logmsg,add($logmsg, $acqLines))"/>
+    <action code="assign($logmsg,add($logmsg, ' ensemble = '))"/>
+    <action code="assign($logmsg,add($logmsg, $acqEnsemble))"/>
+    <action code="assign($logmsg,add($logmsg, ' blocksize = '))"/>
+    <action code="assign($logmsg,add($logmsg, $acqBlockSize))"/>
+    <log>script:$logmsg</log>
+
+    <pdm action="write" name="Hardware/Control/HwImageAcq/Run-Mode">0000000000000000</pdm>
+    <dcm action="write" name="Hardware/Control/HwImageAcq/Run-Mode"/>
+
+    <!--Generate image config for bmode-->
+    <action code="setlength($imageConfig[], 9)"/>
+    <action code="changetype($imageConfig[], 'ulong')"/>
+    <action code="assign($imageConfig[0], byteswapulong(1))"/>
+    <action code="assign($imageConfig[1], byteswapulong($acqSamples))"/>
+    <action code="assign($imageConfig[2], byteswapulong($acqLines))"/>
+    <action code="assign($imageConfig[3], byteswapulong(50))"/>
+    <action code="assign($imageConfig[4], byteswapulong(1))"/>
+    <action code="assign($imageConfig[5], byteswapulong(0))"/>
+    <action code="assign($imageConfig[6], byteswapulong(0))"/>
+    <action code="assign($imageConfig[7], byteswapulong(0))"/>
+    <action code="assign($imageConfig[8], byteswapulong(0))"/>
+    <pdm action="write" name="Hardware/Control/HwImageAcq/Image-Config-Mode0" type="ulong">script:$imageConfig[]</pdm>
+    <dcm action="write" name="Hardware/Control/HwImageAcq/Image-Config-Mode0"/>
+
+    <!--Generate image config for color-->
+    <action code="assign($imageConfig[0], byteswapulong(3))"/>
+    <action code="assign($imageConfig[1], byteswapulong($acqSamples))"/>
+    <action code="assign($imageConfig[2], byteswapulong($acqLines))"/>
+    <action code="assign($imageConfig[3], byteswapulong(50))"/>
+    <action code="assign($imageConfig[4], byteswapulong(1))"/>
+    <action code="assign($imageConfig[5], byteswapulong(0))"/>
+    <action code="assign($imageConfig[6], byteswapulong($acqEnsemble))"/>
+    <action code="assign($imageConfig[7], byteswapulong($acqBlockSize))"/>
+    <action code="assign($imageConfig[8], byteswapulong(0))"/>
+    <pdm action="write" name="Hardware/Control/HwImageAcq/Image-Config-Mode1" type="ulong">script:$imageConfig[]</pdm>
+    <dcm action="write" name="Hardware/Control/HwImageAcq/Image-Config-Mode1"/>
+
+    <pdm action="write" name="Hardware/Control/HwImageAcq/Run-Mode">0000000200000000</pdm>
+    <dcm action="write" name="Hardware/Control/HwImageAcq/Run-Mode"/>
+
+    <!-- Set watermark sizes -->
+    <action code="assign($acqSamples, byteswapulong(6000))"/>
+    <pdm action="write" name="Hardware/Control/HwImageAcq/Data-Acq-Size" type="ulong">script:$acqSamples[]</pdm>
+    <pdm action="write" name="Hardware/Control/HwImageAcq/Fifo-Watermark" type="ulong">script:$acqSamples[]</pdm>
+
+    <!--Send watermark-->
+    <dcm action="write" name="Hardware/Control/HwImageAcq/Data-Acq-Size"/>
+    <dcm action="write" name="Hardware/Control/HwImageAcq/Fifo-Watermark"/>
+
+  </function>
+
+
+  <!-- *************************************************************************************
+
+  Sends the binary values for the image config to firmware for mode setup.
+  Different versions for different configurations
+
+    VsiImageConfig_t msgHeader;
+
+    msgHeader.iMode = _byteswap_ulong(VSI_MODE_B_MODE);
+    msgHeader.iSamplePerLine = _byteswap_ulong(acqSamples);
+    msgHeader.iLinePerFrame = _byteswap_ulong(acqLines);
+    msgHeader.iFrames = _byteswap_ulong(50);
+    msgHeader.iFocalZones = _byteswap_ulong(1);
+    msgHeader.iFrameRate = _byteswap_ulong(0);
+    msgHeader.iEnsembleSize = _byteswap_ulong(acqEnsemble);
+    msgHeader.iBlockSize = _byteswap_ulong(0);
+	  msgHeader.iSendIQ = _byteswap_ulong(0);
+
+    VsiImageRunMode_t msgHeader;
+
+    msgHeader.iRunMode = _byteswap_ulong(VSI_IMAGE_ARM);
+    msgHeader.iSyncType = _byteswap_ulong(0);
+    msgHeader.iFramesPerSec = _byteswap_ulong(10);
+
+  Example:
+    <action code="SendImageConfig_Bmode(512,512)"/>   
+
+  ************************************************************************************* -->
+
+  <function name="SendImageConfig_Bmode" inline="false">
+    <param name="$acqSamples"/>
+    <param name="$acqLines"/>
+
+    <action code="assign($logmsg,'Send image config for bmode with samples =  ')"/>
+    <action code="assign($logmsg,add($logmsg, $acqSamples))"/>
+    <action code="assign($logmsg,add($logmsg, ' lines = '))"/>
+    <action code="assign($logmsg,add($logmsg, $acqLines))"/>
+    <log>script:$logmsg</log>
+
+    <pdm action="write" name="Hardware/Control/HwImageAcq/Run-Mode">0000000000000000</pdm>
+    <dcm action="write" name="Hardware/Control/HwImageAcq/Run-Mode"/>
+
+    <!--Generate image config for bmode (pos pulse)-->
+    <action code="setlength($imageConfig[], 9)"/>
+    <action code="changetype($imageConfig[], 'ulong')"/>
+    <action code="assign($imageConfig[0], byteswapulong(1))"/>
+    <action code="assign($imageConfig[1], byteswapulong($acqSamples))"/>
+    <action code="assign($imageConfig[2], byteswapulong($acqLines))"/>
+    <action code="assign($imageConfig[3], byteswapulong(50))"/>
+    <action code="assign($imageConfig[4], byteswapulong(1))"/>
+    <action code="assign($imageConfig[5], byteswapulong(0))"/>
+    <action code="assign($imageConfig[6], byteswapulong(0))"/>
+    <action code="assign($imageConfig[7], byteswapulong(0))"/>
+    <action code="assign($imageConfig[8], byteswapulong(0))"/>
+    <pdm action="write" name="Hardware/Control/HwImageAcq/Image-Config-Mode0" type="ulong">script:$imageConfig[]</pdm>
+    <dcm action="write" name="Hardware/Control/HwImageAcq/Image-Config-Mode0"/>
+
+    <!--Generate image config for bmode (neg pulse)-->
+    <!--<action code="assign($imageConfig[0], byteswapulong(1))"/>
+    <action code="assign($imageConfig[1], byteswapulong($acqSamples))"/>
+    <action code="assign($imageConfig[2], byteswapulong($acqLines))"/>
+    <action code="assign($imageConfig[3], byteswapulong(50))"/>
+    <action code="assign($imageConfig[4], byteswapulong(1))"/>
+    <action code="assign($imageConfig[5], byteswapulong(0))"/>
+    <action code="assign($imageConfig[6], byteswapulong(0))"/>
+    <pdm action="write" name="Hardware/Control/HwImageAcq/Image-Config-Mode1" type="ulong">script:$imageConfig[]</pdm>
+    <dcm action="write" name="Hardware/Control/HwImageAcq/Image-Config-Mode1"/>-->
+    
+    <pdm action="write" name="Hardware/Control/HwImageAcq/Run-Mode">0000000200000000</pdm>
+    <dcm action="write" name="Hardware/Control/HwImageAcq/Run-Mode"/>
+
+    <!-- Set watermark sizes -->
+    <action code="assign($acqSamples, byteswapulong(6000))"/>
+    <pdm action="write" name="Hardware/Control/HwImageAcq/Data-Acq-Size" type="ulong">script:$acqSamples[]</pdm>
+    <pdm action="write" name="Hardware/Control/HwImageAcq/Fifo-Watermark" type="ulong">script:$acqSamples[]</pdm>
+
+    <!--Send watermark-->
+    <dcm action="write" name="Hardware/Control/HwImageAcq/Data-Acq-Size"/>
+    <dcm action="write" name="Hardware/Control/HwImageAcq/Fifo-Watermark"/>
+
+  </function>
+
+  <function name="SendImageConfig_HOLD" inline="false">
+
+    <log>Send Hold RunMode</log>
+    <pdm action="write" name="Hardware/Control/HwImageAcq/Run-Mode">0000000300000000</pdm>
+    <dcm action="write" name="Hardware/Control/HwImageAcq/Run-Mode"/>
+
+  </function>
+
+  <function name="SendImageConfig_RESET" inline="false">
+
+    <log>Send Reset RunMode</log>
+    <pdm action="write" name="Hardware/Control/HwImageAcq/Run-Mode">0000000000000000</pdm>
+    <dcm action="write" name="Hardware/Control/HwImageAcq/Run-Mode"/>
+
+  </function>
+
+  <!--  Initiate firmware DC offset correction routine 
+   Example:
+    <action code="DcOffsetCorrection"/> -->
+   <function name="DcOffsetCorrection" inline="false">
+     
+    <action code="setlength($dcOffset[], 16)"/>
+    <action code="assign($dcOffset[], 0)"/>
+    <log> Run DC offset correction </log>
+    <pdm action="write" name="Hardware/Control/HwCalibrate/DC-Offset-Set-CB1" type="ulong">script:$dcOffset[]</pdm>
+    <dcm action="write" name="Hardware/Control/HwCalibrate/DC-Offset-Set-CB1"/>
+    <pdm action="write" name="Hardware/Control/HwCalibrate/DC-Offset-Set-CB2" type="ulong">script:$dcOffset[]</pdm>
+    <dcm action="write" name="Hardware/Control/HwCalibrate/DC-Offset-Set-CB2"/>
+    <pdm action="write" name="Hardware/Control/HwCalibrate/DC-Offset-Set-CB3" type="ulong">script:$dcOffset[]</pdm>
+    <dcm action="write" name="Hardware/Control/HwCalibrate/DC-Offset-Set-CB3"/>
+    <pdm action="write" name="Hardware/Control/HwCalibrate/DC-Offset-Set-CB4" type="ulong">script:$dcOffset[]</pdm>
+    <dcm action="write" name="Hardware/Control/HwCalibrate/DC-Offset-Set-CB4"/>
+
+    <pdm action="write" name="Hardware/Rx/HwTgcCb/Enable">00000000</pdm>
+    <dcm action="write" name="Hardware/Rx/HwTgcCb/Enable"/>
+    <pdm action="write" name="Hardware/Rx/HwTgcCb/FixedGain">00000080</pdm>
+    <dcm action="write" name="Hardware/Rx/HwTgcCb/FixedGain"/>
+
+    <pdm action="write" name="Hardware/Control/HwCalibrate/DC-Offset-Calibrate2">00000004</pdm>
+    <dcm action="write" name="Hardware/Control/HwCalibrate/DC-Offset-Calibrate2"/>
+    
+  </function>
+
+  <!--  Synchronize tx clocks on hardware 
+   Example:
+    <action code="SyncTxClock"/> -->
+  <function name="SyncTxClock" inline="false">
+
+    <!-- Fill in the doppler pll table -->
+    <action code="assign($pllDop8[0], 3825275904)"/>
+    <action code="assign($pllDop8[1], 84124162)"/>
+    <action code="assign($pllDop8[2], 3976565252)"/>
+    <action code="assign($pllDop8[3], 705113350)"/>
+    <action code="assign($pllDop8[4], 3221815304)"/>
+    <action code="assign($pllDop8[5], 1208680458)"/>
+    <action code="assign($pllDop8[6], 2148597776)"/>
+    <action code="assign($pllDop8[7], 739442706)"/>
+    <action code="assign($pllDop8[8], 4279582228)"/>
+    <action code="assign($pllDop8[9], 521658134)"/>
+    <action code="assign($pllDop8[10], 3222880024)"/>
+    <action code="assign($pllDop8[11], 2097183)"/>
+    <action code="assign($pllDop8[12], 2229025)"/>
+    <action code="assign($pllDop8[13], 254017571)"/>
+    <action code="assign($pllDop8[14], 2736168)"/>
+    <action code="assign($pllDop8[15], 2883370)"/>
+    <action code="assign($pllDop8[16], 120389676)"/>
+    <action code="assign($pllDop8[17], 3080238)"/>
+    <action code="assign($pllDop8[18], 3606320)"/>
+    <action code="assign($pllDop8[19], 42213251)"/>
+    <action code="assign($pllDop8[20], 4287303562)"/>
+    <action code="assign($pllDop8[21], 9371790)"/>
+    <action code="assign($pllDop8[22], 8405128)"/>
+    <action code="assign($pllDop8[23], 8519809)"/>
+    <action code="assign($pllDop8[24], 8847494)"/>
+
+    <log> Sync TX clock </log>
+    <!-- For BCB rev less than 4-->
+    <!-- <pdm action="write" name="Hardware/Control/HwClockControl/Doppler-Pll-Control" type="ulong">0000ACC8</pdm>
+    <dcm action="write" name="Hardware/Control/HwClockControl/Doppler-Pll-Control"/> -->
+
+    <!-- For BCB rev 4 and up-->
+    <pdm action="write" name="Hardware/Control/HwClockControl/Doppler-Pll-Registers" type="ulong">script:$pllDop8[]</pdm>
+    <dcm action="write" name="Hardware/Control/HwClockControl/Doppler-Pll-Registers"/>
+    <sleep time="20"/>
+
+    <dcm action="read" name="Hardware/Control/HwClockControl/Pll-Status"/>
+    <pdm action="read" name="Hardware/Control/HwClockControl/Pll-Status" type="ulong" return="$pllStatus[]"/>
+
+    <!-- <action code="assign($pllStatus, 2)"/> -->
+    <if test="equal(0, bitwiseAnd($pllStatus, 2))">
+      <log>Align the TXx2 CLKs - Incorrect PLL-Status</log>
+    </if>
+
+    <!-- Forced mode -->
+    <pdm action="write" name="Hardware/Control/HwClockControl/Mux-Control" type="ulong">0000000C</pdm>
+    <dcm action="write" name="Hardware/Control/HwClockControl/Mux-Control"/>
+
+    <pdm action="write" name="Hardware/Control/HwTimingGen/Tx-Rx-Sync" type="ulong">00040000</pdm>
+    <dcm action="write" name="Hardware/Control/HwTimingGen/Tx-Rx-Sync"/>
+
+    <sleep time="20"/>
+
+    <!--Clear -->
+    <pdm action="write" name="Hardware/Control/HwTimingGen/Tx-Rx-Sync" type="ulong">00000000</pdm>
+    <dcm action="write" name="Hardware/Control/HwTimingGen/Tx-Rx-Sync"/>
+
+    <!-- Required timing parameters-->
+    <pdm action="write" name="Hardware/Control/HwClockControl/Rx-Pll-Control" type="ulong">0001AAD2</pdm>
+    <dcm action="write" name="Hardware/Control/HwClockControl/Rx-Pll-Control"/>
+
+    <pdm action="write" name="Hardware/Control/HwClockControl/Tx-Pll-Control" type="ulong">0000AEF0</pdm>
+    <dcm action="write" name="Hardware/Control/HwClockControl/Tx-Pll-Control"/>
+
+    <pdm action="write" name="Hardware/Control/HwClockControl/Mux-Control" type="ulong">00000001</pdm>
+    <dcm action="write" name="Hardware/Control/HwClockControl/Mux-Control"/>
+
+  </function>
+
+  <!-- *************************************************************************************
+
+        Initializes transducer 
+
+        Example:
+          <action code="InitializeTransducer('MS-250','General Imaging')"/>   
+
+      ************************************************************************************* -->
+  <function name="InitializeTransducer" inline="false">
+    <param name="$transducer"/>
+    <param name="$application"/>
+
+    <action code="assign($logmsg,'Initializing transducer ')"/>
+    <action code="assign($logmsg,add($logmsg, $transducer))"/>
+    <action code="assign($logmsg,add($logmsg, ' with application '))"/>
+    <action code="assign($logmsg,add($logmsg, $application))"/>
+    <log>script:$logmsg</log>
+
+    <cmd code="AppSelect"/>
+    <sleep time="3000"/>
+    <action code="=($msg, '')"/>
+    <choose>
+      <when test="equal($transducer, 'MS-200')">
+        <action code="=($msg, '#K1ACS ')"/>
+      </when>
+      <when test="equal($transducer, 'MS-250')">
+        <action code="=($msg, '#K2ACS ')"/>
+      </when>
+      <when test="equal($transducer, 'LZ-250')">
+        <action code="=($msg, '#K3ACS ')"/>
+      </when>
+      <when test="equal($transducer, 'MS-400')">
+        <action code="=($msg, '#K5ACS ')"/>
+      </when>
+      <when test="equal($transducer, 'MS-550D')">
+        <action code="=($msg, '#K4ACS ')"/>
+      </when>
+      <when test="equal($transducer, 'MS-550S')">
+        <action code="=($msg, '#K6ACS ')"/>
+      </when>
+      <when test="equal($transducer, 'LZ-550')">
+        <action code="=($msg, '#K8ACS ')"/>
+      </when>
+      <when test="equal($transducer, 'MS-700')">
+        <action code="=($msg, '#K7ACS ')"/>
+      </when>
+    </choose>
+    <action code="+=($msg, '#T2000')"/>
+    <ui>
+      <input key="script:$msg"/>  <!-- Fake transducer -->
+      <input key="#ST"/>  <!-- set focus back to the combo -->
+    </ui>
+    <action code="=($msg, '#K')"/>
+    <!-- TODO: get the first letter of the application name to select it in the combo
+    NOTE: !!!!!!!!!!
+    this will not work as is if we have multiple applications that start with the same letter -->
+    <!--<action code="+=($msg, $application[0])"/>-->
+    <action code="+=($msg, 'g #T1000')"/><!--fake gen im for now-->
+    <ui>
+      <input key="script:$msg"/>  <!-- select proper application -->
+      <input key="#SE"/>  <!-- Enter -->
+    </ui>
+    <!-- TODO: loop until we are activated -->
+    <loop count="1000000000">
+      <sleep time="1000"/>
+      <pdm action="read" name="App/Settings/System/State" type="long" return="$check"/>
+      <action code="=($checkActivated, bitwiseAnd($check, 512))"/>
+      <if test="greater($checkActivated, 0)">
+        <break/>
+      </if>
+    </loop>
+  </function>
+
+  <!-- *************************************************************************************
+
+        Start Scanning in requested mode
+
+        Example:
+          <action code="StartScan('BMode')"/>   
+
+      ************************************************************************************* -->
+  <function name="StartScan" inline="false">
+    <param name="$mode"/>
+
+    <action code="assign($logmsg,'Start scanning in ')"/>
+    <action code="assign($logmsg,add($logmsg, $mode))"/>
+    <log>script:$logmsg</log>
+
+    <!-- If transducer is not initialized, use default one -->
+    <pdm action="read" name="App/Settings/System/State" type="long" return="$check"/>
+    <action code="=($checkActivated, bitwiseAnd($check, 512))"/>
+    <if test="less($checkActivated, 512)">
+      <action code="InitializeTransducer('MS-250','General Imaging')"/>
+    </if>
+
+    <!-- Detach 3D motor for now (not supported yet) -->
+    <pdm action="read" name="App/Settings/Hardware/3D-Motor-State" type="long" return="$check"/>
+    <action code="=($check, bitwiseAnd($check, 2))"/>
+    <pdm action="write" name="App/Settings/Hardware/3D-Motor-State">script:$check</pdm>
+
+    <cmd code="script:$mode"/>
+    <!--put some code to adeqatly determine the amount of time to wait for scan to start-->
+    <loop count="1000000">
+      <sleep time="1000"/>
+      <pdm action="read" name="App/Settings/System/State" type="long" return="$check"/>
+      <action code="=($checkScan, bitwiseAnd($check, 1024))"/>
+      <if test="greater($checkScan, 0)">
+        <break/>
+      </if>
+    </loop>
+    
+
+  </function>
+
+</script>

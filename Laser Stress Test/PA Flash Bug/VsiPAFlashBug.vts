@@ -1,0 +1,167 @@
+<?xml version="1.0"?>
+
+<!-- *************************************************************************************
+PA Flash Bug duration test script
+
+** make sure the transducer is initialized **
+** make sure the laser cart is initialized **
+
+Rev 1.0 - 2011-0404 - Jia Qi created the first draft
+************************************************************************************** -->
+
+<script logFile="C:\PAFlashBug\PAFlashBug_script:$sysDateTime.txt" logClear="true">
+  <using name="pdm" progID="VsiVevo.TestScriptPdm"/>
+  <using name="dcm" progID="VsiVevo.TestScriptDcm"/>
+  <using name="cmd" progID="VsiVevo.TestScriptCommand"/>
+  <using name="ui" progID="VsiVevo.ScriptUI"/>
+  
+  <!-- Record Script Begin Time -->
+  <action code="assign($_beginDateTime, $sysDateTime)"/>
+
+  <!-- Declare Global variables before Link -->
+  <action code="assign($_countO, 0)"/>
+  <!-- "Energy Optimization" window pop up count -->
+  <action code="assign($_countF, 0)"/>
+  <!-- "Energy Optimization Failed" window pop up count -->
+  <action code="assign($_countPA, 0)"/>
+  <!-- PA submode scanning count -->
+  <action code="assign($_countLSb, 0)"/>
+  <!-- Laser Shout Count at the beginning of the script -->
+  <action code="assign($_countLSf, 0)"/>
+  <!-- Laser Shout Count at the finish of the script -->
+  <action code="assign($_PassRate, 100.0)"/>
+  <!-- Passing rate for Optimization -->
+
+  <link file="VsiLaserFunc.vts"/>
+
+  <!-- Check if Transducer is initialized or not -->
+  <pdm action="read" name="App/Settings/System/State" type="long" return="$check"/>
+  <action code="=($checkActivated, bitwiseAnd($check, 512))"/>
+  <!-- check Transducer Actived bit -->
+  <action code="=($checkScan, bitwiseAnd($check, 1024))"/>
+  <!-- check Scanning bit -->
+  <!-- Check if Laser Cart is initialized or not -->
+  <pdm action="read" name="Hardware/Control/HwLaserControl/PA-Laser-Init-State" return="$checkLaser"/>
+
+  <choose>
+    <!-- If Transducer is NOT initialized, stop the script -->
+    <when test="less($checkActivated, 512)">
+      <!-- Tansducer Actived bit is disabled -->
+      <log level="error">Please initialize the transducer before running the script!</log>
+    </when>
+    <!-- If Laser Cart is NOT initialized, stop the script -->
+    <when test="notequal($checkLaser, $true)">
+      <log level="error">Please initialize the laser cart before running the script!</log>
+    </when>
+
+    <otherwise>
+      <!-- Preparation Begin -->
+      <log> </log>
+      <log time="true">Preparation begins...</log>
+      <!-- Record Laser Serial Number -->
+      <action code="LaserSerialNumber()"/>
+      <!-- Record Laser Shot Count at the beginning of the script -->
+      <action code="assign($_countLSb, LaserShotCountReading())"/>
+      <!-- Enable RF -->
+      <pdm action="write" name="Acq/Mode/Settings/RF-Feature">true</pdm>
+      <sleep time="1000"/>
+      <!-- Enable 5 Wavelengths for PA-Mode -->
+      <action code="Enable5Wavelength()"/>
+      <!-- Start scanning in PA-Mode -->
+      <cmd code="PaMode"/>
+      <sleep time="7000"/>
+      <!-- Detect the current PA sub mode -->
+      <action code="assign($submode, PASubMode())"/>
+      <!-- Select "PA Acquisition" ScreenKey selection -->
+      <cmd code="ScreenKeyRight"/>
+      <sleep time="1000"/>
+      <cmd code="ScreenKeySelect"/>
+      <sleep time="1000"/>
+      <!-- Rotate "PA Acquisition" ScreenKey to "Nanostepper" selection -->
+      <if test="equal($submode, 'Single')">
+        <cmd code="ScreenKeyRight"/>
+        <sleep time="1000"/>
+      </if>
+      <if test="equal($submode, 'Oxy-Hemo')">
+        <cmd code="ScreenKeyLeft"/>
+        <sleep time="1000"/>
+      </if>
+      <!-- Set to Nanostepper PA-Mode scanning -->
+      <cmd code="ScreenKeySelect"/>
+      <sleep time="7000"/>
+      <!-- output submode name and wavelengths -->
+      <action code="Wavelength()"/>
+      <!-- Force to Optimize -->
+      <pdm action="write" name="Acq/Pa-Mode/PaModeSoft/Energy-Optimize-Req">true</pdm>
+      <pdm action="write" name="Acq/Pa-Mode/PaModeSoft/Energy-Optimize-Skip-Count" base="10">0</pdm>
+      <!-- Reduce Cine Loop Size for PA-Mode from Max to 100 frames -->
+      <action code="CineLoopSize('Pa-Mode')"/>
+      <sleep time="1000"/>
+      <!-- Optimization -->
+      <action code="OptimizationDuringPreparation(100)"/>
+      <!-- No matter the "Energy Optimization" window pop up or not, save the PA cine loop-->
+      <!-- By Cine Store in PA-Mode to make sure ScreenKey selection "Display Layout" will be highlighted afterwards-->
+      <!-- Set Auto Save on Image Label for the Entire Cine Loop -->
+      <pdm action="write" name="App/Settings/System/Auto-Save-On-Label">true</pdm>
+      <sleep time="1000"/>
+      <pdm action="write" name="App/Settings/System/Auto-Save-Type">0</pdm>
+      <sleep time="1000"/>
+      <action code="CineStorewithImageLabel('Image0')"/>
+      <log time="true">Preparation finished.</log>
+      <log> </log>
+      <!-- Preparation Finish -->
+
+      <!-- Loop: scan in RF Nanostepper PA-Mode for 1 minute then save the acquired loop -->
+      <!-- Loop 200 times will take 6 hours -->
+      <loop count="200">
+        <!-- Label "Image#:" in the script result -->
+        <action code="=($_countPA, add($_countPA, 1))"/>
+        <action code="=($logmsg, 'Image')"/>
+        <action code="+=($logmsg, $_countPA)"/>
+        <action code="+=($logmsg, ':')"/>
+        <log time="true">script:$logmsg</log>
+        <!-- Start scanning in PA-Mode -->
+        <cmd code="PaMode"/>
+        <sleep time="7000"/>
+        <!-- Scanning 80 seconds -->
+        <sleep time="80000"/>
+        <!-- Pause scanning in PA-Mode -->
+        <cmd code="Scan"/>
+        <sleep time="7000"/>
+        
+        <!-- Record Laser OPO and SHG Energy every time after acquire each cine loop -->
+        <action code="LaserEnergyReadings()"/>
+
+        <!-- Check if the "Energy Optimization" window pop up or not after acquire each cine loop-->
+        <action code="OptimizationDuringPAsubmodesRotateScan(100)"/>
+
+        <!-- No matter the "Energy Optimization" window pop up or not, save the PA cine loop-->
+        <action code="=($imagelabel, 'Image')"/>
+        <action code="+=($imagelabel, $_countPA)"/>
+        <action code="CineStorewithImageLabel($imagelabel)"/>
+      </loop>
+      
+      <!-- Generate Report -->
+      <action code="Report()"/>
+    </otherwise>
+  </choose>
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
